@@ -1,0 +1,9 @@
+**/.idea/
+**/kafka-streams-examples
+**/delta_configs/
+**/target/
+img_data
+**/python_notify/
+**/confluent-hub-components/
+*.tar.gz
+log.*
