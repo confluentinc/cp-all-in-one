@@ -58,9 +58,9 @@ services:
       KSQL_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: $SASL_JAAS_CONFIG
       KSQL_KSQL_CONNECT_URL: "http://connect:8083"
 
-  ksql-cli:
-    image: ${REPOSITORY}/cp-ksql-cli:${CONFLUENT_DOCKER_TAG}
-    container_name: ksql-cli
+  ksqldb-cli:
+    image: ${REPOSITORY}/cp-ksqldb-cli:${CONFLUENT_DOCKER_TAG}
+    container_name: ksqldb-cli
     entrypoint: /bin/sh
     tty: true
 
