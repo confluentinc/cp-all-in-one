@@ -6,6 +6,7 @@
 * Docker Compose version 1.14.0 with Docker Compose file format 2.1
 * You must have access to a [Confluent Cloud](https://www.confluent.io/confluent-cloud/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) cluster
 * Create a local file (e.g. at `$HOME/.confluent/java.config`) with configuration parameters to connect to your [Confluent Cloud](https://www.confluent.io/confluent-cloud/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) Kafka cluster.  Follow [these detailed instructions](https://github.com/confluentinc/configuration-templates/tree/master/README.md) to properly create this file.
+* This setup assumes that you are using credentials associated with the Confluent Cloud user account for which no additional ACLs are required. If you are using a service account, you are responsible for pre-configuring the required ACLs using the Confluent Cloud CLI.
 
 # Setup
 
