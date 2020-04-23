@@ -140,7 +140,7 @@ services:
     tty: true
 
   ksql-datagen:
-    image: ${REPOSITORY}/ksql-examples:${CONFLUENT_DOCKER_TAG}
+    image: ${REPOSITORY}/ksqldb-examples:${CONFLUENT_DOCKER_TAG}
     hostname: ksql-datagen
     container_name: ksql-datagen
     depends_on:
