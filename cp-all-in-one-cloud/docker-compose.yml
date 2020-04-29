@@ -3,7 +3,7 @@ version: '2'
 services:
 
   schema-registry:
-    image: ${REPOSITORY}/cp-schema-registry:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-schema-registry:5.5.0
     hostname: schema-registry
     container_name: schema-registry
     ports:
@@ -18,7 +18,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: "PLAIN"
 
   ksqldb-server:
-    image: ${REPOSITORY}/cp-ksqldb-server:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-ksqldb-server:5.5.0
     hostname: ksqldb-server
     container_name: ksqldb-server
     ports:
@@ -59,13 +59,13 @@ services:
       KSQL_KSQL_CONNECT_URL: "http://connect:8083"
 
   ksqldb-cli:
-    image: ${REPOSITORY}/cp-ksqldb-cli:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-ksqldb-cli:5.5.0
     container_name: ksqldb-cli
     entrypoint: /bin/sh
     tty: true
 
   control-center:
-    image: ${REPOSITORY}/cp-enterprise-control-center:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-enterprise-control-center:5.5.0
     hostname: control-center
     container_name: control-center
     depends_on:
@@ -154,7 +154,7 @@ services:
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: PLAIN
 
   rest-proxy:
-    image: ${REPOSITORY}/cp-kafka-rest:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-kafka-rest:5.5.0
     depends_on:
       - schema-registry
     ports:

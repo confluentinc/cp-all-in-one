@@ -2,7 +2,7 @@
 version: '2'
 services:
   zookeeper:
-    image: ${REPOSITORY}/cp-zookeeper:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-zookeeper:5.5.0
     hostname: zookeeper
     container_name: zookeeper
     ports:
@@ -12,7 +12,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
 
   broker:
-    image: ${REPOSITORY}/cp-kafka:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-kafka:5.5.0
     hostname: broker
     container_name: broker
     depends_on:
@@ -31,7 +31,7 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
   schema-registry:
-    image: ${REPOSITORY}/cp-schema-registry:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-schema-registry:5.5.0
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -75,7 +75,7 @@ services:
       CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
 
   ksqldb-server:
-    image: ${REPOSITORY}/cp-ksqldb-server:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-ksqldb-server:5.5.0
     hostname: ksqldb-server
     container_name: ksqldb-server
     depends_on:
@@ -95,7 +95,7 @@ services:
       KSQL_KSQL_CONNECT_URL: "http://connect:8083"
 
   ksqldb-cli:
-    image: ${REPOSITORY}/cp-ksqldb-cli:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-ksqldb-cli:5.5.0
     container_name: ksqldb-cli
     depends_on:
       - broker
@@ -105,7 +105,7 @@ services:
     tty: true
 
   ksql-datagen:
-    image: ${REPOSITORY}/ksqldb-examples:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/ksqldb-examples:5.5.0
     hostname: ksql-datagen
     container_name: ksql-datagen
     depends_on:
@@ -127,7 +127,7 @@ services:
       STREAMS_SCHEMA_REGISTRY_PORT: 8081
 
   rest-proxy:
-    image: ${REPOSITORY}/cp-kafka-rest:${CONFLUENT_DOCKER_TAG}
+    image: confluentinc/cp-kafka-rest:5.5.0
     depends_on:
       - zookeeper
       - broker
