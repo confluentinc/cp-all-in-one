@@ -16,7 +16,7 @@ Note: Use this in a *non-production* Confluent Cloud instance for development pu
 
 By default, the demo uses Confluent Schema Registry running in a local Docker container. If you prefer to use Confluent Cloud Schema Registry instead, you need to first set it up:
 
-   a. [Enable](http://docs.confluent.io/current/quickstart/cloud-quickstart.html#step-3-configure-sr-ccloud?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) Confluent Cloud Schema Registry prior to running the demo
+   a. [Enable Confluent Cloud Schema Registry](http://docs.confluent.io/current/quickstart/cloud-quickstart.html#step-3-configure-sr-ccloud?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) prior to running the demo
 
    b. Validate your credentials to Confluent Cloud Schema Registry
 
@@ -25,6 +25,18 @@ By default, the demo uses Confluent Schema Registry running in a local Docker co
    ```
 
 ## Step 2
+
+By default, the demo uses ksqlDB running in a local Docker container. If you prefer to use Confluent Cloud KSQL instead, you need to first set it up:
+
+   a. [Enable Confluent Cloud KSQL](https://docs.confluent.io/current/quickstart/cloud-quickstart/ksql.html#create-a-ksqldb-application-in-ccloud?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) prior to running the demo
+
+   b. Validate your credentials to Confluent Cloud KSQL
+
+   ```bash
+   $ curl -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" -u <KSQL API KEY>:<KSQL API SECRET> https://<KSQL ENDPOINT>/info
+   ```
+
+## Step 3
 
 Generate a file of ENV variables used by Docker to set the bootstrap servers and security configuration.
 (See [documentation](https://docs.confluent.io/current/cloud/connect/auto-generate-configs.html?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) for more information on using this script.)
@@ -41,7 +53,7 @@ Generate a file of ENV variables used by Docker to set the bootstrap servers and
    $ ../utils/ccloud-generate-cp-configs.sh $HOME/.confluent/java.config
    ```
 
-## Step 3
+## Step 4
 
 Source the generated file of ENV variables
 
@@ -82,6 +94,8 @@ $ docker-compose up -d control-center
 ```
 
 ## KSQL Server
+
+If you are not using Confluent Cloud KSQL:
 
 ```bash
 $ docker-compose up -d ksqldb-server
