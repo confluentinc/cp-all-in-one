@@ -16,7 +16,7 @@ Note: Use this in a *non-production* Confluent Cloud instance for development pu
 
 By default, the demo uses Confluent Schema Registry running in a local Docker container. If you prefer to use Confluent Cloud Schema Registry instead, you need to first set it up:
 
-   a. [Enable](http://docs.confluent.io/current/quickstart/cloud-quickstart.html#step-3-configure-sr-ccloud?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) Confluent Cloud Schema Registry prior to running the demo
+   a. [Enable Confluent Cloud Schema Registry](http://docs.confluent.io/current/quickstart/cloud-quickstart.html#step-3-configure-sr-ccloud?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) prior to running the demo
 
    b. Validate your credentials to Confluent Cloud Schema Registry
 
@@ -28,7 +28,7 @@ By default, the demo uses Confluent Schema Registry running in a local Docker co
 
 By default, the demo uses ksqlDB running in a local Docker container. If you prefer to use Confluent Cloud KSQL instead, you need to first set it up:
 
-   a. [Enable](https://docs.confluent.io/current/quickstart/cloud-quickstart/ksql.html#create-a-ksqldb-application-in-ccloud?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) Confluent Cloud KSQL prior to running the demo
+   a. [Enable Confluent Cloud KSQL](https://docs.confluent.io/current/quickstart/cloud-quickstart/ksql.html#create-a-ksqldb-application-in-ccloud?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) prior to running the demo
 
    b. Validate your credentials to Confluent Cloud KSQL
 
