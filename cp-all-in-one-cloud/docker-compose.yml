@@ -68,8 +68,6 @@ services:
     image: confluentinc/cp-enterprise-control-center:5.5.0
     hostname: control-center
     container_name: control-center
-    depends_on:
-      - schema-registry
     ports:
       - "9021:9021"
     environment:
@@ -100,8 +98,6 @@ services:
     image: cnfldemos/cp-server-connect-datagen:0.3.2-5.5.0
     hostname: connect
     container_name: connect
-    depends_on:
-      - schema-registry
     ports:
       - "8083:8083"
     volumes:
@@ -155,8 +151,6 @@ services:
 
   rest-proxy:
     image: confluentinc/cp-kafka-rest:5.5.0
-    depends_on:
-      - schema-registry
     ports:
       - 8082:8082
     hostname: rest-proxy
