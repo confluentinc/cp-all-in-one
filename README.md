@@ -1,6 +1,7 @@
 ![image](images/confluent-logo-300-2.png)
   
 * [Build Your Own](#build-your-own)
+* [In Action](#in-action)
 * [Additional Resources](#additional-resources)
 
 # Build Your Own
@@ -27,6 +28,10 @@ Using these as a foundation, you can add any connectors or applications.
 <a href="cp-all-in-one-cloud"><img src="images/cp-all-in-one-cloud.png" width="600"></a>
 </p>
 
+
+# In Action
+
+To see these `cp-all-in-one` examples in action, see the automated demos in https://github.com/confluentinc/examples/tree/latest/cp-quickstart  . There is one automated demo for each of the above Docker Compose files.
 
 
 # Additional Resources
