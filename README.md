@@ -24,7 +24,7 @@ Using these as a foundation, you can add any connectors or applications.
 * [cp-all-in-one-cloud](cp-all-in-one-cloud/README.md): Use this with your existing Confluent Cloud instance. This Docker Compose file launches all services in Confluent Platform (except for the Kafka brokers), runs them in containers in your local host, and automatically configures them to connect to Confluent Cloud.
 
 <p align="center">
-<img src="images/cp-all-in-one-cloud.png" width="400">
+<img src="images/cp-all-in-one-cloud.png" width="600">
 </p>
 
 
