@@ -26,14 +26,14 @@ By default, the demo uses Confluent Schema Registry running in a local Docker co
 
 ## Step 2
 
-By default, the demo uses ksqlDB running in a local Docker container. If you prefer to use Confluent Cloud KSQL instead, you need to first set it up:
+By default, the demo uses ksqlDB running in a local Docker container. If you prefer to use Confluent Cloud ksqlDB instead, you need to first set it up:
 
-   a. [Enable Confluent Cloud KSQL](https://docs.confluent.io/current/quickstart/cloud-quickstart/ksql.html#create-a-ksqldb-application-in-ccloud?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) prior to running the demo
+   a. [Enable Confluent Cloud ksqlDB](https://docs.confluent.io/current/quickstart/cloud-quickstart/ksql.html#create-a-ksqldb-application-in-ccloud?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) prior to running the demo
 
-   b. Validate your credentials to Confluent Cloud KSQL
+   b. Validate your credentials to Confluent Cloud ksqlDB
 
    ```bash
-   $ curl -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" -u <KSQL API KEY>:<KSQL API SECRET> https://<KSQL ENDPOINT>/info
+   $ curl -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" -u <ksqlDB API KEY>:<ksqlDB API SECRET> https://<ksqlDB ENDPOINT>/info
    ```
 
 ## Step 3
@@ -93,18 +93,18 @@ $ docker-compose up -d connect
 $ docker-compose up -d control-center
 ```
 
-## KSQL Server
+## ksqlDB Server
 
-If you are not using Confluent Cloud KSQL:
+If you are not using Confluent Cloud ksqlDB:
 
 ```bash
 $ docker-compose up -d ksqldb-server
 ```
 
-## KSQL CLI
+## ksqlDB CLI
 
 ```bash
-$ docker-compose up -d ksql-cli
+$ docker-compose up -d ksqldb-cli
 ```
 
 ## Confluent REST Proxy
