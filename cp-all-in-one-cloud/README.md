@@ -4,9 +4,10 @@
 
 This [docker-compose.yml](docker-compose.yml) launches all services in Confluent Platform (except for the Kafka brokers), runs them in containers in your local host, and automatically configures them to connect to Confluent Cloud.
 
-## Confluent Cloud Coupon
+## Confluent Cloud Credit
 
-The first 20 users to sign up on [Confluent Cloud](https://www.confluent.io/confluent-cloud/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) and use coupon code ``C50INTEG`` will receive an additional $50 free usage credit. It must be used within 90 days from activation date.
+The first 20 users to sign up for [Confluent Cloud](https://www.confluent.io/confluent-cloud/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) and use coupon code ``C50INTEG`` will receive an additional $50 free usage credit.
+It must be activated by December 31, 2021, and used within 90 days of activation date.
 
 
 # Pre-requisites
