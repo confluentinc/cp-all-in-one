@@ -7,7 +7,7 @@
 # Build Your Own
 
 We have several resources that launch Apache Kafka® and Confluent Platform with no pre-configured connectors, data sources, topics, schemas, etc.
-This is useful if you want to build your own custom demo or test environment.
+These examples are useful if you want to build your own custom demo or test environment.
 Using these as a foundation, you can add any connectors or applications.
 
 * [cp-all-in-one](cp-all-in-one/README.md): This Docker Compose file launches all services in Confluent Platform, and runs them in containers in your local host.
@@ -31,7 +31,7 @@ Using these as a foundation, you can add any connectors or applications.
 
 # In Action
 
-To see these `cp-all-in-one` examples in action, see the automated demos in https://github.com/confluentinc/examples/tree/latest/cp-quickstart  . There is one automated demo for each of the above Docker Compose files.
+To see these `cp-all-in-one` examples in action, see the automated demos in https://github.com/confluentinc/examples/tree/latest/cp-quickstart . There is one automated demo for each of the above Docker Compose files.
 
 
 # Additional Resources
