@@ -121,7 +121,7 @@ Assuming you are using Confluent Cloud ksqldB, if you want to just run a Docker 
 docker run -it confluentinc/cp-ksqldb-cli:5.5.0 -u $(echo $KSQLDB_BASIC_AUTH_USER_INFO | awk -F: '{print $1}') -p $(echo $KSQLDB_BASIC_AUTH_USER_INFO | awk -F: '{print $2}') $KSQLDB_ENDPOINT
 ```
 
-If you want to run a Docker container for ksqlDB CLI from the Docker Compose file, and then log in a separate step:
+If you want to run a Docker container for ksqlDB CLI from the Docker Compose file and connect to Confluent Cloud ksqlDB in a separate step:
 
 ```bash
 $ docker-compose up -d ksqldb-cli
