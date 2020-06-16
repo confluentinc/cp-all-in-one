@@ -69,12 +69,21 @@ docker-compose up -d schema-registry
 
 ## Kafka Connect
 
+The [docker-compose.yml](docker-compose.yml) file has a container called `connect` that is running a custom Docker image [cnfldemos/cp-server-connect-datagen](https://hub.docker.com/r/cnfldemos/cp-server-connect-datagen/) which pre-bundles the [kafka-connect-datagen](https://www.confluent.io/hub/confluentinc/kafka-connect-datagen?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) connector.
+To start the pre-built Docker container with `kafka-connect-datagen`:
+
 ```bash
 docker-compose up -d connect
 ```
 
-Note that the [docker-compose.yml](docker-compose.yml) file is running the Docker image [cnfldemos/cp-server-connect-datagen](https://hub.docker.com/r/cnfldemos/cp-server-connect-datagen/) which pre-bundles the [kafka-connect-datagen](https://www.confluent.io/hub/confluentinc/kafka-connect-datagen) connector.
-If you want to run Connect with any other connector, first add your desired connector to the base Kafka Connect Docker image as described [here](https://docs.confluent.io/current/connect/managing/extending.html) and then substitute that Docker image in your Docker Compose file.
+If you want to run Connect with any other connector, you need to build a custom Docker image that adds your desired connector to the base Kafka Connect Docker image (documentation [here](https://docs.confluent.io/current/connect/managing/extending.html?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud).
+Search through [Confluent Hub](https://www.confluent.io/hub/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) to find the appropriate connector and set `CONNECTOR_NAME`.
+To build and start a new Docker container with your connector:
+
+```bash
+docker build --build-arg CONNECTOR_NAME=${CONNECTOR_NAME} -t localbuild/connect_custom_example:latest -f ../utils/Dockerfile .
+docker-compose up -d connect -f ../utils/connect.overrides.yml
+```
 
 ## Confluent Control Center
 
