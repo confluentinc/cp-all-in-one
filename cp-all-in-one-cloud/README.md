@@ -1,5 +1,11 @@
 ![image](../images/confluent-logo-300-2.png)
 
+* [Overview](#overview)
+* [Pre-requisites](#pre-requisites)
+* [Setup](#setup)
+* [Bring up services](#bring-up-services)
+
+
 # Overview
 
 This [docker-compose.yml](docker-compose.yml) launches all services in Confluent Platform (except for the Kafka brokers), runs them in containers in your local host, and automatically configures them to connect to Confluent Cloud.
