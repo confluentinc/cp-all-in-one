@@ -83,16 +83,16 @@ docker-compose up -d connect
 ```
 
 If you want to run Connect with any other connector, you need to first build a custom Docker image that adds the desired connector to the base Kafka Connect Docker image (documentation [here](https://docs.confluent.io/current/connect/managing/extending.html?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud)).
-Search through [Confluent Hub](https://www.confluent.io/hub/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) to find the appropriate connector and set `CONNECTOR_NAME`, then build the new, custom Docker container using the provided [Dockerfile](../utils/Dockerfile):
+Search through [Confluent Hub](https://www.confluent.io/hub/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) to find the appropriate connector and set `CONNECTOR_NAME`, then build the new, custom Docker container using the provided [Dockerfile](../Docker/Dockerfile):
 
 ```bash
-docker build --build-arg CONNECTOR_NAME=${CONNECTOR_NAME} -t localbuild/connect_custom_example:latest -f ../utils/Dockerfile .
+docker build --build-arg CONNECTOR_NAME=${CONNECTOR_NAME} -t localbuild/connect_custom_example:latest -f ../Docker/Dockerfile .
 ```
 
-Start this custom Docker container with the [overrides file](../utils/connect.overrides.yml) to specify the new Docker image:
+Start this custom Docker container with the [overrides file](../Docker/connect.overrides.yml) to specify the new Docker image:
 
 ```bash
-docker-compose -f docker-compose.yml -f ../utils/connect.overrides.yml up -d connect
+docker-compose -f docker-compose.yml -f ../Docker/connect.overrides.yml up -d connect
 ```
 
 ## Confluent Control Center
