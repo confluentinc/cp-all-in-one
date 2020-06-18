@@ -92,7 +92,11 @@ docker build --build-arg CONNECTOR_NAME=${CONNECTOR_NAME} -t localbuild/connect_
 Start this custom Docker container with the [overrides file](../Docker/connect.overrides.yml) to specify the new Docker image:
 
 ```bash
+# Override in docker-compose.yml
 docker-compose -f docker-compose.yml -f ../Docker/connect.overrides.yml up -d connect
+
+# Run just connect
+docker-compose -f docker-compose.connect.local.yml up -d
 ```
 
 ## Confluent Control Center
