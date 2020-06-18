@@ -89,7 +89,7 @@ Search through [Confluent Hub](https://www.confluent.io/hub/?utm_source=github&u
 docker build --build-arg CONNECTOR_NAME=${CONNECTOR_NAME} -t localbuild/connect_custom_example:latest -f ../Docker/Dockerfile .
 ```
 
-Start this custom Docker container with the [overrides file](../Docker/connect.overrides.yml) to specify the new Docker image:
+Start this custom Docker container:
 
 ```bash
 # Override in docker-compose.yml
