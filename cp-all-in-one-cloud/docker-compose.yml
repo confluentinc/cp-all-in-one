@@ -100,8 +100,6 @@ services:
     container_name: connect
     ports:
       - "8083:8083"
-    volumes:
-      - mi2:/usr/share/java/monitoring-interceptors/
     environment:
       CONNECT_BOOTSTRAP_SERVERS: $BOOTSTRAP_SERVERS
       CONNECT_REST_PORT: 8083
@@ -171,6 +169,3 @@ services:
       KAFKA_REST_CLIENT_SECURITY_PROTOCOL: "SASL_SSL"
       KAFKA_REST_CLIENT_SASL_JAAS_CONFIG: $SASL_JAAS_CONFIG
       KAFKA_REST_CLIENT_SASL_MECHANISM: "PLAIN"
-
-volumes:
-    mi2: {}
