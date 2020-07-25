@@ -4,7 +4,6 @@
   * [cp-all-in-one-cloud](cp-all-in-one-cloud)
   * [cp-all-in-one](cp-all-in-one)
   * [cp-all-in-one-community](cp-all-in-one-community)
-* [In Action](#in-action)
 * [Additional Resources](#additional-resources)
 
 # Build Your Own
@@ -39,11 +38,9 @@ The first 20 users to sign up for [Confluent Cloud](https://www.confluent.io/con
 <a href="cp-all-in-one-community"><img src="images/cp-all-in-one-community.png" width="400"></a>
 </p>
 
-# In Action
-
-To see these `cp-all-in-one` examples in action, see the automated demos in https://github.com/confluentinc/examples/tree/latest/cp-quickstart . There is one automated demo for each of the above Docker Compose files.
-
 # Additional Resources
+
+* To see these specific `cp-all-in-one` Docker Compose files in action, see the automated demos in https://github.com/confluentinc/examples/tree/latest/cp-quickstart . There is one automated demo for each of the above Docker Compose files.
 
 * [confluentinc/examples](https://github.com/confluentinc/examples): curated list of end-to-end demos that showcase Apache Kafka® event stream processing on the Confluent Platform, an event stream processing platform that enables you to process, organize, and manage massive amounts of streaming data across cloud, on-prem, and serverless deployments.
 
