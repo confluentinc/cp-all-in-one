@@ -15,7 +15,7 @@ Using these as a foundation, you can add any connectors or applications.
 
 ## cp-all-in-one-cloud
 
-[cp-all-in-one-cloud](cp-all-in-one-cloud/README.md): Use this with your existing Confluent Cloud instance. This Docker Compose file launches all services in Confluent Platform (except for the Kafka brokers), runs them in containers in your local host, and automatically configures them to connect to Confluent Cloud. Use in conjunction with [ccloud-stack](https://github.com/confluentinc/examples/blob/latest/ccloud/ccloud-stack/README.md) to quickly create new Confluent Cloud environments.
+[cp-all-in-one-cloud](cp-all-in-one-cloud/README.md): Use this with Confluent Cloud, optionally in conjunction with [ccloud-stack](https://github.com/confluentinc/examples/blob/latest/ccloud/ccloud-stack/README.md) to quickly create new Confluent Cloud environments. This Docker Compose file launches all services in Confluent Platform (except for the Kafka brokers), runs them in containers in your local host, and automatically configures them to connect to Confluent Cloud.
 
 The first 20 users to sign up for [Confluent Cloud](https://www.confluent.io/confluent-cloud/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) and use promo code ``C50INTEG`` will receive an additional $50 free usage ([details](https://www.confluent.io/confluent-cloud-promo-disclaimer/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud)).
 
