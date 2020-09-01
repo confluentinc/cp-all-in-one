@@ -14,7 +14,7 @@ Using these as a foundation, you can add any connectors or applications.
 
 ## cp-all-in-one-cloud
 
-[cp-all-in-one-cloud](cp-all-in-one-cloud/README.md): Use this with Confluent Cloud, optionally in conjunction with [ccloud-stack](https://github.com/confluentinc/examples/blob/latest/ccloud/ccloud-stack/README.md) to quickly create new Confluent Cloud environments. This Docker Compose file launches all services in Confluent Platform (except for the Kafka brokers), runs them in containers in your local host, and automatically configures them to connect to Confluent Cloud.
+[cp-all-in-one-cloud](cp-all-in-one-cloud/README.md): Use this with Confluent Cloud, optionally in conjunction with [ccloud-stack](https://docs.confluent.io/current/tutorials/examples/ccloud/docs/ccloud-stack.html?utm_source=github&utm_medium=demo&utm_campaign=ch.examples_type.community_content.cp-all-in-one) to quickly create new Confluent Cloud environments. This Docker Compose file launches all services in Confluent Platform (except for the Kafka brokers), runs them in containers in your local host, and automatically configures them to connect to Confluent Cloud.
 
 The first 20 users to sign up for [Confluent Cloud](https://www.confluent.io/confluent-cloud/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud) and use promo code ``C50INTEG`` will receive an additional $50 free usage ([details](https://www.confluent.io/confluent-cloud-promo-disclaimer/?utm_source=github&utm_medium=demo&utm_campaign=ch.cp-all-in-one_type.community_content.cp-all-in-one-cloud)).
 
@@ -48,7 +48,7 @@ The first 20 users to sign up for [Confluent Cloud](https://www.confluent.io/con
 <a href="http://www.youtube.com/watch?v=muQBd6gry0U" target="_blank"><img src="https://github.com/confluentinc/examples/blob/latest/images/examples-video-thumbnail.jpg" width="360" height="270" border="10" /></a>
 </p>
 
-* [ccloud-stack](https://github.com/confluentinc/examples/blob/latest/ccloud/ccloud-stack/README.md): creates a stack of fully managed services in Confluent Cloud. It is a quick way to create fully managed components in Confluent Cloud, along with a service account, credentials, and ACLs, which you can then use for learning and building other demos.
+* [ccloud-stack](https://docs.confluent.io/current/tutorials/examples/ccloud/docs/ccloud-stack.html?utm_source=github&utm_medium=demo&utm_campaign=ch.examples_type.community_content.cp-all-in-one): creates a stack of fully managed services in Confluent Cloud. It is a quick way to create fully managed components in Confluent Cloud, along with a service account, credentials, and ACLs, which you can then use for learning and building other demos.
 
 <p align="center">
 <a href="https://github.com/confluentinc/examples/blob/latest/ccloud/ccloud-stack/README.md"><img src="images/cloud-stack.png" width="400"></a>
