@@ -34,7 +34,6 @@ services:
       KAFKA_JMX_PORT: 9101
       KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
-      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
@@ -44,20 +43,18 @@ services:
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
-      - zookeeper
       - broker
     ports:
       - "8081:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
 
   connect:
     image: cnfldemos/cp-server-connect-datagen:0.3.2-5.5.0
     hostname: connect
     container_name: connect
     depends_on:
-      - zookeeper
       - broker
       - schema-registry
     ports:
@@ -79,7 +76,6 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       # CLASSPATH required due to CC-2422
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-6.0.0-SNAPSHOT.jar
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
@@ -92,7 +88,6 @@ services:
     hostname: control-center
     container_name: control-center
     depends_on:
-      - zookeeper
       - broker
       - schema-registry
       - connect
@@ -101,7 +96,6 @@ services:
       - "9021:9021"
     environment:
       CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
-      CONTROL_CENTER_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       CONTROL_CENTER_CONNECT_CLUSTER: 'connect:8083'
       CONTROL_CENTER_KSQL_KSQLDB1_URL: "http://ksqldb-server:8088"
       CONTROL_CENTER_KSQL_KSQLDB1_ADVERTISED_URL: "http://localhost:8088"
@@ -170,7 +164,6 @@ services:
   rest-proxy:
     image: confluentinc/cp-kafka-rest:6.0.x-latest
     depends_on:
-      - zookeeper
       - broker
       - schema-registry
     ports:
