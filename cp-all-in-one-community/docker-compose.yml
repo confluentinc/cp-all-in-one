@@ -37,20 +37,18 @@ services:
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
-      - zookeeper
       - broker
     ports:
       - "8081:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
 
   connect:
     image: cnfldemos/kafka-connect-datagen:0.3.2-5.5.0
     hostname: connect
     container_name: connect
     depends_on:
-      - zookeeper
       - broker
       - schema-registry
     ports:
@@ -72,7 +70,6 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
-      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
       CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
 
@@ -134,7 +131,6 @@ services:
   rest-proxy:
     image: confluentinc/cp-kafka-rest:6.1.x-latest
     depends_on:
-      - zookeeper
       - broker
       - schema-registry
     ports:
