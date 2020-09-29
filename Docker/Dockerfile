@@ -18,4 +18,4 @@ FROM confluentinc/cp-server-connect-base:5.5.0
 ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
 
 ARG CONNECTOR_NAME
-RUN confluent-hub install --no-prompt confluentinc/${CONNECTOR_NAME}:5.5.0
+RUN confluent-hub install --no-prompt confluentinc/${CONNECTOR_NAME}:6.0.0
