@@ -31,6 +31,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
 
   schema-registry:
     image: confluentinc/cp-schema-registry:6.0.0
