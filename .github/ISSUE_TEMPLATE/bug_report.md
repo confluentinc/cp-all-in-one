@@ -7,8 +7,8 @@ assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Description**
+A clear and concise description of what the issue is.
 
 **Troubleshooting**
 If applicable, please include the output of `docker-compose logs <container name>`.
