@@ -1,0 +1,20 @@
+---
+name: Bug report
+about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
+
+---
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**Troubleshooting**
+If applicable, please include the output of `docker-compose logs <container name>`.
+
+**Envirnonment**
+ - GitHub branch: [e.g. 6.0.1-post, etc]
+ - Operating System
+ - Version of Docker
+ - Version of Docker Compose
