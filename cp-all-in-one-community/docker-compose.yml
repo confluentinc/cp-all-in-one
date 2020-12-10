@@ -47,7 +47,7 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
 
   connect:
-    image: cnfldemos/kafka-connect-datagen:0.4.0-6.0.0
+    image: cnfldemos/kafka-connect-datagen:0.4.0-6.0.1
     hostname: connect
     container_name: connect
     depends_on:
