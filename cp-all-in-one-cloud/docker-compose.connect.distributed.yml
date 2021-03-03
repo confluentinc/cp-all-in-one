@@ -3,7 +3,7 @@ version: '2'
 services:
 
   connect:
-    image: localbuild/connect_custom_example:latest
+    image: localbuild/connect_distributed_with_${CONNECTOR_NAME}:${CONNECTOR_VERSION}
     hostname: connect
     container_name: connect
     ports:
