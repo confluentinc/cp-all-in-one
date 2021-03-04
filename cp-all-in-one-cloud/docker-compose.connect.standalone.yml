@@ -6,8 +6,6 @@ services:
     image: localbuild/connect_standalone_with_${CONNECTOR_NAME}:${CONNECTOR_VERSION}
     hostname: connect
     container_name: connect
-    ports:
-      "8083:8083"
     environment:
       # STANDALONE_ properties are for the Connect worker
       STANDALONE_BOOTSTRAP_SERVERS: $BOOTSTRAP_SERVERS
@@ -32,13 +30,13 @@ services:
       STANDALONE_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: $SCHEMA_REGISTRY_URL
       STANDALONE_VALUE_CONVERTER_BASIC_AUTH_CREDENTIALS_SOURCE: USER_INFO
       STANDALONE_VALUE_CONVERTER_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO: $SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO
-      STANDALONE_REST_PORT: 8083
+      STANDALONE_PLUGIN_PATH: /usr/share/confluent-hub-components/confluentinc-kafka-connect-elasticsearch/
 
       # CONNECT_ properties are for the connector itself, example shown below
       CONNECT_NAME: elasticsearch-sink-connector
       CONNECT_CONNECTOR_CLASS: io.confluent.connect.elasticsearch.ElasticsearchSinkConnector
       CONNECT_TYPE_NAME: _doc
       CONNECT_TOPICS: test01
-      CONNECT_KEY_IGNORE: true
-      CONNECT_SCHEMA_IGNORE: false
+      CONNECT_KEY_IGNORE: "true"
+      CONNECT_SCHEMA_IGNORE: "false"
       CONNECT_CONNECTION_URL: http://elasticsearch:9200
