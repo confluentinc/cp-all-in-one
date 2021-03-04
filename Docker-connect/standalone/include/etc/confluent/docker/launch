@@ -41,4 +41,4 @@ echo "===> Launching ${COMPONENT} ... "
 if [ -z "$CLASSPATH" ]; then
     export CLASSPATH="/etc/kafka-connect/jars/*"
 fi
-exec connect-standalone /etc/"${COMPONENT}"/"${COMPONENT}"-standalone.properties /etc/"${COMPONENT}"/"${COMPONENT}".properties 
+exec connect-standalone /etc/"${COMPONENT}"/"${COMPONENT}".properties /etc/"${COMPONENT}"/"${COMPONENT}"-standalone.properties 
