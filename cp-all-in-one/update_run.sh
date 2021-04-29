@@ -9,13 +9,3 @@ echo "mkdir /tmp/kraft-combined-logs"
 mkdir /tmp/kraft-combined-logs
 
 sed -i '/docker\/configure/a \\ncat /tmp/myprops.properties >> /etc/kafka/kafka.properties' /etc/confluent/docker/run
-
-#echo "ls /etc/kafka/kafka.properties"
-#ls /etc/kafka/kafka.properties
-#cat /etc/kafka/kafka.properties
-#cat /tmp/myprops.properties
-
-#echo "ls /tmp"
-#ls /tmp
-#echo "cat /etc/confluent/docker/run"
-#cat /etc/confluent/docker/run
