@@ -14,6 +14,7 @@ _Describe the validation already done, or needs to be done, by the PR submitter.
 <!-- - [ ] cp-all-in-one -->
 <!-- - [ ] cp-all-in-one-cloud -->
 <!-- - [ ] cp-all-in-one-community -->
+<!-- - [ ] cp-all-in-one-kraft -->
 
 
 ### Reviewer Tasks
@@ -25,3 +26,4 @@ _Describe the tasks/validation that the PR submitter is requesting to be done by
 <!-- - [ ] cp-all-in-one -->
 <!-- - [ ] cp-all-in-one-cloud -->
 <!-- - [ ] cp-all-in-one-community -->
+<!-- - [ ] cp-all-in-one-kraft -->
