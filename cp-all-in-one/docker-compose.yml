@@ -6,9 +6,9 @@ services:
     hostname: zookeeper
     container_name: zookeeper
     ports:
-      - "2181:2181"
+      - "1812:1812"
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_CLIENT_PORT: 1812
       ZOOKEEPER_TICK_TIME: 2000
 
   broker:
@@ -18,7 +18,7 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"
+      - "2902:9092"
       - "9101:9101"
     environment:
       KAFKA_BROKER_ID: 1
