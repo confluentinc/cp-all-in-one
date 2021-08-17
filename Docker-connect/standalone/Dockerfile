@@ -21,8 +21,9 @@ USER root
 COPY --chown=appuser:appuser include/etc/confluent/docker /etc/confluent/docker
 USER appuser
 
+ARG CONNECTOR_OWNER=confluentinc
 ARG CONNECTOR_NAME
 ARG CONNECTOR_VERSION
-RUN confluent-hub install --no-prompt confluentinc/${CONNECTOR_NAME}:${CONNECTOR_VERSION}
+RUN confluent-hub install --no-prompt ${CONNECTOR_OWNER}/${CONNECTOR_NAME}:${CONNECTOR_VERSION}
 
 CMD ["/etc/confluent/docker/run"]
