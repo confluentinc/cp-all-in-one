@@ -70,6 +70,11 @@ services:
     container_name: control-center
     ports:
       - "9021:9021"
+    # Temporary workaround to MMA-11806
+    volumes:
+      - ./myprops.properties:/tmp/myprops.properties
+      - ./update_run.sh:/tmp/update_run.sh
+    command: "bash -c '/tmp/update_run.sh ; /etc/confluent/docker/run'"
     environment:
       CONTROL_CENTER_BOOTSTRAP_SERVERS: $BOOTSTRAP_SERVERS
       CONTROL_CENTER_KSQL_KSQLDB1_URL: "http://ksqldb-server:8089"
