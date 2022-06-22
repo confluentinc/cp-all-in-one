@@ -1,0 +1,257 @@
+name: kafka-app
+
+on: [push]
+
+env:
+
+  # General
+  DEST_WORKSPACE: ${{ github.workspace }}
+  NETWORK: workspace_default
+
+  # Confluent Cloud
+  TOPIC: t3
+  CONFLUENT_BOOTSTRAP_SERVERS: ${{ secrets.CONFLUENT_BOOTSTRAP_SERVERS }}
+  CONFLUENT_API_KEY: ${{ secrets.CONFLUENT_API_KEY }}
+  CONFLUENT_API_SECRET: ${{ secrets.CONFLUENT_API_SECRET }}
+
+  # Confluent Cloud Schema Registry and AVRO
+  TOPICAVRO: t3-avro
+  CONFLUENT_SCHEMA_REGISTRY_URL: ${{ secrets.CONFLUENT_SCHEMA_REGISTRY_URL }}
+  CONFLUENT_BASIC_AUTH_USER_INFO: ${{ secrets.CONFLUENT_BASIC_AUTH_USER_INFO }}
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image for Kafka client app
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.actor }}/kafka-app:latest
+
+  sanity:
+
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Kafka client app sanity test
+        run: |
+          docker run -t -e TOPIC=$TOPIC \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.sanity.config:/etc/librdkafka.config \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c '/usr/bin/producer.py -f /etc/librdkafka.config -t $TOPIC'
+
+  local:
+
+    needs: sanity
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Confluent Platform (Confluent Server)
+        uses: confluentinc/cp-all-in-one@v0.1
+        with:
+          service: broker
+
+      - name: Run Kafka client app to local cluster
+        run: |
+          docker run -t -e TOPIC=$TOPIC \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.local.config:/etc/librdkafka.config \
+                        --net ${NETWORK} \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c '/usr/bin/producer.py -f /etc/librdkafka.config -t $TOPIC'
+          docker run -t -e TOPIC=$TOPIC \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.local.config:/etc/librdkafka.config \
+                        --net ${NETWORK} \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c 'timeout 10s /usr/bin/consumer.py -f /etc/librdkafka.config -t $TOPIC' \
+                          || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
+
+      - name: Test message count
+        run: tests/local.sh $TOPIC
+
+  local-avro:
+
+    needs: sanity
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run Confluent Platform (Confluent Server and Confluent Schema Registry)
+        uses: confluentinc/cp-all-in-one@v0.1
+        with:
+          service: schema-registry
+
+      - name: Run Kafka client app to local cluster with Schema Registry and Avro data
+        run: |
+          docker run -t -e TOPICAVRO=$TOPICAVRO \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.local-avro.config:/etc/librdkafka.config \
+                        --net ${NETWORK} \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c '/usr/bin/producer_ccsr.py -f /etc/librdkafka.config -t $TOPICAVRO'
+          docker run -t -e TOPICAVRO=$TOPICAVRO \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.local-avro.config:/etc/librdkafka.config \
+                        --net ${NETWORK} \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c 'timeout 10s /usr/bin/consumer_ccsr.py -f /etc/librdkafka.config -t $TOPICAVRO' \
+                          || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
+
+      - name: Test message count
+        run: tests/local-avro.sh $TOPICAVRO
+
+  ccloud:
+
+    needs: local
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: franzbischoff/replace_envs@v1
+        with:
+          from_file: 'github-actions-example/configs/librdkafka.ccloud.config'
+          to_file: 'github-actions-example/configs/librdkafka.ccloud.config'
+          commit: 'false'
+
+      - name: Run Kafka client app to Confluent Cloud
+        run: |
+          docker run -t -e TOPIC=$TOPIC \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.ccloud.config:/etc/librdkafka.config \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c '/usr/bin/producer.py -f /etc/librdkafka.config -t $TOPIC'
+          docker run -t -e TOPIC=$TOPIC \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.ccloud.config:/etc/librdkafka.config \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c 'timeout 10s /usr/bin/consumer.py -f /etc/librdkafka.config -t $TOPIC' \
+                          || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
+
+      - name: Test message count
+        run: tests/ccloud.sh $TOPIC
+
+  ccloud-avro:
+
+    needs: local-avro
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: franzbischoff/replace_envs@v1
+        with:
+          from_file: 'github-actions-example/configs/librdkafka.ccloud-avro.config'
+          to_file: 'github-actions-example/configs/librdkafka.ccloud-avro.config'
+          commit: 'false'
+
+      - name: Run Kafka client app to Confluent Cloud with Schema Registry and Avro data
+        run: |
+          docker run -t -e TOPICAVRO=$TOPICAVRO \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.ccloud-avro.config:/etc/librdkafka.config \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c '/usr/bin/producer_ccsr.py -f /etc/librdkafka.config -t $TOPICAVRO'
+          docker run -t -e TOPICAVRO=$TOPICAVRO \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.ccloud-avro.config:/etc/librdkafka.config \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c 'timeout 10s /usr/bin/consumer_ccsr.py -f /etc/librdkafka.config -t $TOPICAVRO' \
+                          || code=$?; if [[ $code -ne 124 && $code -ne 0 ]]; then exit $code; fi
+
+      - name: Test message count
+        run: tests/ccloud-avro.sh $TOPICAVRO
+
+  ccloud-python-schema-compatibility:
+
+    needs: ccloud-avro
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - uses: franzbischoff/replace_envs@v1
+        with:
+          from_file: 'github-actions-example/configs/librdkafka.ccloud-avro.config'
+          to_file: 'github-actions-example/configs/librdkafka.ccloud-avro.config'
+          commit: 'false'
+
+      - name: Test compatibility of a new schema
+        run: |
+          # Pass
+          docker run -t -e TOPICAVRO=$TOPICAVRO \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.ccloud-avro.config:/etc/librdkafka.config \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c '/usr/bin/test_schema_compatibility.py -f /etc/librdkafka.config -t $TOPICAVRO -s /etc/Count-pass.avsc'
+          # Fail; the -e flag sets expected_pass to False
+          docker run -t -e TOPICAVRO=$TOPICAVRO \
+                        -v ${DEST_WORKSPACE}/github-actions-example/configs/librdkafka.ccloud-avro.config:/etc/librdkafka.config \
+                        --name my-kafka-app --rm ghcr.io/${{ github.actor }}/kafka-app:latest \
+                        bash -c '/usr/bin/test_schema_compatibility.py -f /etc/librdkafka.config -t $TOPICAVRO -s /etc/Count-fail.avsc -e'
+
+  ccloud-java-schema-compatibility:
+
+    needs: ccloud-avro
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Test compatibility of a new schema
+        run: |
+          # Pass
+          mvn io.confluent:kafka-schema-registry-maven-plugin:test-compatibility \
+              "-DschemaRegistryUrl=$CONFLUENT_SCHEMA_REGISTRY_URL" \
+              "-DschemaRegistryBasicAuthUserInfo=$CONFLUENT_BASIC_AUTH_USER_INFO" \
+              "-DnewSchema=github-actions-example/schemas/Count-pass.avsc"
+          # Fail
+          mvn io.confluent:kafka-schema-registry-maven-plugin:test-compatibility \
+              "-DschemaRegistryUrl=$CONFLUENT_SCHEMA_REGISTRY_URL" \
+              "-DschemaRegistryBasicAuthUserInfo=$CONFLUENT_BASIC_AUTH_USER_INFO" \
+              "-DnewSchema=github-actions-example/schemas/Count-fail.avsc" || echo "Ok: Expected to fail"
