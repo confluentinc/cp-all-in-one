@@ -1,7 +1,6 @@
-FROM python:3.7-slim
-  
-COPY requirements.txt /tmp/requirements.txt
-RUN pip3 install -U -r /tmp/requirements.txt
+FROM tiangolo/docker-with-compose
 
-COPY src/*.py /usr/bin/.
-COPY schemas/* /etc/.
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
