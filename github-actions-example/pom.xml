@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.confluent</groupId>
+        <artifactId>rest-utils-parent</artifactId>
+        <version>7.1.1</version>
+    </parent>
+
+    <groupId>io.confluent</groupId>
+    <artifactId>GitHub-Actions-Schema-Registry-Test-Compatibility</artifactId>
+    <version>1.0</version>
+
+    <properties>
+        <schemaRegistryUrl></schemaRegistryUrl>
+        <schemaRegistryBasicAuthUserInfo></schemaRegistryBasicAuthUserInfo>
+        <newSchema>schemas/Count.avsc</newSchema>
+        <confluent.version>7.1.0</confluent.version>
+    </properties>
+
+    <repositories>
+      <repository>
+        <id>confluent</id>
+        <name>Confluent</name>
+        <url>https://packages.confluent.io/maven/</url>
+      </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-schema-registry-maven-plugin</artifactId>
+                <version>${confluent.version}</version>
+                <configuration>
+                    <schemaRegistryUrls>
+                        <param>${schemaRegistryUrl}</param>
+                    </schemaRegistryUrls>
+                    <userInfoConfig>${schemaRegistryBasicAuthUserInfo}</userInfoConfig>
+                    <subjects>
+                        <t3-avro-value>${newSchema}</t3-avro-value>
+                    </subjects>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>test-compatibility</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>test-compatibility</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+</project>

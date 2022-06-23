@@ -1,0 +1,19 @@
+name: 'Run Apache Kafka® with Confluent cp-all-in-one'
+description: 'Setup Confluent cp-all-in-one'
+author: 'confluentinc'
+inputs:
+  github branch version:
+    description: 'GitHub branch of cp-all-in-one to use'
+    required: false
+    default: 'latest'
+  service:
+    description: 'Define service up to which to start'
+    required: false
+    default: ''
+  type:
+    description: 'Which cp-all-in-one to deploy (one of: cp-all-in-one, cp-all-in-one-community)'
+    required: false
+    default: 'cp-all-in-one'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
