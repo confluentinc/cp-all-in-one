@@ -1,0 +1,16 @@
+{
+  "fields": [
+    {
+      "name": "count",
+      "type": "int"
+    },
+    {
+      "name": "id",
+      "type": ["int", "null"],
+      "default": null
+    }
+  ],
+  "name": "Count",
+  "namespace": "io.confluent.examples.clients.cloud",
+  "type": "record"
+}
