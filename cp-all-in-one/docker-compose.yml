@@ -3,6 +3,7 @@ version: '2'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.1.1
+    # FOR M1 CHIP CHANGE IMAGE TO -- confluentinc/cp-zookeeper:latest.arm64
     hostname: zookeeper
     container_name: zookeeper
     ports:
@@ -13,6 +14,7 @@ services:
 
   broker:
     image: confluentinc/cp-server:7.1.1
+    # FOR M1 CHIP CHANGE IMAGE TO -- confluentinc/cp-server:latest.arm64
     hostname: broker
     container_name: broker
     depends_on:
@@ -42,6 +44,7 @@ services:
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.1.1
+    # FOR M1 CHIP CHANGE IMAGE TO -- confluentinc/cp-schema-registry:latest.arm64
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -85,6 +88,7 @@ services:
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:7.1.1
+    # FOR M1 CHIP CHANGE IMAGE TO -- confluentinc/cp-enterprise-control-center:latest.arm64
     hostname: control-center
     container_name: control-center
     depends_on:
@@ -108,6 +112,7 @@ services:
 
   ksqldb-server:
     image: confluentinc/cp-ksqldb-server:7.1.1
+    # FOR M1 CHIP CHANGE IMAGE TO -- confluentinc/cp-ksqldb-server:latest.arm64
     hostname: ksqldb-server
     container_name: ksqldb-server
     depends_on:
@@ -131,6 +136,7 @@ services:
 
   ksqldb-cli:
     image: confluentinc/cp-ksqldb-cli:7.1.1
+    # FOR M1 CHIP CHANGE IMAGE TO -- confluentinc/cp-ksqldb-cli:latest.arm64
     container_name: ksqldb-cli
     depends_on:
       - broker
@@ -141,6 +147,7 @@ services:
 
   ksql-datagen:
     image: confluentinc/ksqldb-examples:7.1.1
+    # FOR M1 CHIP CHANGE IMAGE TO -- confluentinc/ksqldb-examples:latest.arm64
     hostname: ksql-datagen
     container_name: ksql-datagen
     depends_on:
@@ -163,6 +170,7 @@ services:
 
   rest-proxy:
     image: confluentinc/cp-kafka-rest:7.1.1
+    # FOR M1 CHIP CHANGE IMAGE TO -- confluentinc/cp-kafka-rest:latest.arm64
     depends_on:
       - broker
       - schema-registry
