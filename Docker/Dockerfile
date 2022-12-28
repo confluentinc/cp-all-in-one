@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM confluentinc/cp-server-connect-base:5.5.13-SNAPSHOT
+FROM confluentinc/cp-server-connect-base:5.5.14-SNAPSHOT
 
 ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components"
 
