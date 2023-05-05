@@ -25,9 +25,9 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
-    volumes:
-      - ./update-bash-config.sh:/tmp/update-bash-config.sh
-    command: "bash -c 'if [ ! -f /tmp/update-bash-config.sh ]; then echo \"ERROR: Did you forget the update-bash-config.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/update-bash-config.sh && /etc/confluent/docker/run ; fi'"
+      # Replace CLUSTER_ID with a unique base64 UUID using "bin/kafka-storage.sh random-uuid" 
+      # See https://docs.confluent.io/kafka/operations-tools/kafka-tools.html#kafka-storage-sh
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.5.x-latest
