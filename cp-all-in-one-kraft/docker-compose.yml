@@ -6,6 +6,8 @@ services:
     image: confluentinc/cp-kafka:7.4.0
     hostname: broker
     container_name: broker
+    depends_on:
+      - controller
     ports:
       - "9092:9092"
       - "9101:9101"
@@ -19,13 +21,37 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_JMX_PORT: 9101
       KAFKA_JMX_HOSTNAME: localhost
-      KAFKA_PROCESS_ROLES: 'broker,controller'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
-      KAFKA_LISTENERS: 'PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_PROCESS_ROLES: 'broker'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '2@controller:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://broker:29092,PLAINTEXT_HOST://0.0.0.0:9092'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
       # Replace CLUSTER_ID with a unique base64 UUID using "bin/kafka-storage.sh random-uuid" 
+      # See https://docs.confluent.io/kafka/operations-tools/kafka-tools.html#kafka-storage-sh
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+  controller:
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: controller
+    container_name: controller
+    ports:
+      - "9093:9093"
+      - "9102:9102"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9102
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: 'controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '2@controller:9093'
+      KAFKA_LISTENERS: 'CONTROLLER://controller:9093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-controller-logs'
+      # Replace CLUSTER_ID with a unique base64 UUID using "bin/kafka-storage.sh random-uuid"
       # See https://docs.confluent.io/kafka/operations-tools/kafka-tools.html#kafka-storage-sh
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
 
@@ -35,6 +61,7 @@ services:
     container_name: schema-registry
     depends_on:
       - broker
+      - controller
     ports:
       - "8081:8081"
     environment:
@@ -48,6 +75,7 @@ services:
     container_name: connect
     depends_on:
       - broker
+      - controller
       - schema-registry
     ports:
       - "8083:8083"
@@ -78,6 +106,7 @@ services:
     container_name: control-center
     depends_on:
       - broker
+      - controller
       - schema-registry
       - connect
       - ksqldb-server
@@ -101,6 +130,7 @@ services:
     container_name: ksqldb-server
     depends_on:
       - broker
+      - controller
       - connect
     ports:
       - "8088:8088"
@@ -123,6 +153,7 @@ services:
     container_name: ksqldb-cli
     depends_on:
       - broker
+      - controller
       - connect
       - ksqldb-server
     entrypoint: /bin/sh
@@ -135,6 +166,7 @@ services:
     depends_on:
       - ksqldb-server
       - broker
+      - controller
       - schema-registry
       - connect
     command: "bash -c 'echo Waiting for Kafka to be ready... && \
@@ -154,6 +186,7 @@ services:
     image: confluentinc/cp-kafka-rest:7.4.0
     depends_on:
       - broker
+      - controller
       - schema-registry
     ports:
       - 8082:8082
