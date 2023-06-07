@@ -1,0 +1,16 @@
+{
+  "name": "mongos_224",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "tasks.max": "1",
+    "topics": "kafka1.kafka.foo",
+    "connection.uri": "mongodb+srv://test:test@kafka.oa4fi.mongodb.net/test?retryWrites=true&w=majority",
+    "database": "kafka",
+    "collection": "foo",
+    "writemodel.strategy": "com.mongodb.kafka.connect.sink.writemodel.strategy.UpdateOneBusinessKeyTimestampStrategy",
+    "value.projection.type": "AllowList",
+    "value.projection.list": "a,b,_id",
+    "document.id.strategy": "com.mongodb.kafka.connect.sink.processor.id.strategy.PartialValueStrategy",
+    "document.id.strategy.overwrite.existing": "true"
+  }
+}

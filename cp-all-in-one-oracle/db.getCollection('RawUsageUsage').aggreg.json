@@ -1,0 +1,195 @@
+db.getCollection('RawUsageUsage').aggregate([
+    {
+        "$match": {
+            "masterSubscriberNumber": {
+                "$in": [
+                    "850025930"
+                ]
+            },
+            "tradeUpGroup": {
+                "$in": [
+                    "DIT_DATA_MON"
+                ]
+            },
+            "duns": {
+                "$in": [
+                    "212907588",
+                    "233031348"
+                ]
+            }
+        }
+    },
+    --> index {masterSubscriberNumber: 1, duns: 1, tradeUpGroup: 1, orderedDate: 1
+    }  Equaly Sort Range 
+
+
+    {
+        "$facet": {
+            "000024630751": [
+                {
+                    "$match": {$and: [
+                            {
+                                "masterSubscriberNumber": "850025930"
+                            },
+                            {
+                                "duns": "212907588"
+                            },
+                            {
+                                "internalUsageType": "_FinancialStandingMon3"
+                            },
+                            {
+                                "orderedDate": {$gte:ISODate("2021-03-18T00:00:00.000+0000"),$lte:ISODate("2021-03-18T23:59:59.999+0000")
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": null,
+                        "rawUsageIdList": {
+                            "$push": "$rawUsageIdentifier"
+                        }
+                    }
+                },
+                {
+                    "$project": {
+                        "rawUsageIdList": 1
+                    }
+                }
+            ],
+        }
+    }
+])
+
+step1 10 documewnt ->>input --> step2 match reduce 10
+
+
+*****
+
+db.getCollection("RawUsage").aggregate([
+    {
+        "$match": {
+            "rowStatus": "TO-BE-REPROCESSED",
+            "orderedDate": {$gte:ISODate("2021-05-04T00:00:00.000Z"),$lte:ISODate("2021-05-04T23:59:59.999Z")
+            }
+        }
+    },
+    {
+        "$group": {
+            "_id": "$functionalErrorCode",
+            "count": {
+                "$sum": 1
+            }
+        }
+    },
+    {
+        "$project": {
+            "count": 1,
+            "_id": 0,
+            "functionalErrorCode": "$_id"
+        }
+    }
+]);
+
+{rowStatus: 1, orderedDate: 1, functionalErrorCode: 1
+}
+
+business logic --> error --> updating "rowStatus": "TO-BE-REPROCESSED",
+                          --> errorTable $inc 33  
+
+****
+
+
+"orderedDate": {
+    "$gte": {
+        "$date": 1619862045838
+    },
+    "$lte": {
+        "$date": 1621417245838
+    }
+},
+"status": {
+    "$in": [
+        "PRE_RATED"
+    ]
+}
+}, Fields: {}, Sort: {}
+
+{status: 1, orderedDate: 1
+}
+/// {rawUsageIdentifier:1, status:1}
+{status: 1,rawUsageIdentifier: 1,  orderedDate: 1
+}
+
+
+****
+updateQuery : Query: {
+"cuk": {
+    "$exists": true,
+    "$in": [
+        "003"
+    ]
+}
+}, Fields: {}, Sort: {}
+
+{cuk: 1
+}
+
+valueUpdate : {
+"$set": {
+    "billedDate": {
+        "$date": 1620293265094
+    },
+    "billingIds": [
+        "1011"
+    ],
+    "invoiceDate": {
+        "$date": 1620259200000
+    },
+    "invoiceIdentifier": "00045003",
+    "status": "PRE-RATED",
+    "totalQuantity": "100",
+    "totalValue": "5000",
+    "ratingDate": {
+        "$date": 1583143734003
+    }
+}
+}
+
+
+***
+
+Query: {
+"rawUsageIdentifier": {
+    "$exists": true,
+    "$in": [
+        "000024630751"
+    ]
+},
+"status": "PRE-RATED"
+}, Fields: {}, Sort: {}
+
+{rawUsageIdentifier: 1, status: 1
+}
+{
+"$set": {
+    "valorizationPattern": "string",
+    "value": "0",
+    "currencyCode": "string",
+    "invoiceIdentifier": "string",
+    "status": "RATED",
+    "ratingDate": {
+        "$date": 1621417245882
+    },
+    "invoiceDate": {
+        "$date": 1621417245882
+    },
+    "billedDate": {
+        "$date": 1621417245882
+    },
+    "rowUpdatedDate": {
+        "$date": 1621421501712
+    }
+}
+}

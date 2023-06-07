@@ -1,0 +1,17 @@
+{
+  "name": "source_kafka",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSourceConnector",
+    "tasks.max": "2",
+    "connection.uri": "mongodb+srv://test:test@atc.oa4fi.mongodb.net/test?retryWrites=true&w=majority&connectTimeoutMS=300000",
+    "copy.existing": "true",
+    "copy.existing.max.threads": "2",
+    "copy.existing.queue.size": "160000",
+    "database": "kafka",
+    "collection": "foo",
+    "pipeline": "[{\"$match\": {}}]",
+    "publish.full.document.only": "true",
+    "change.stream.full.document": "updatelookup",
+    "topic.prefix": "kafka1"
+  }
+}

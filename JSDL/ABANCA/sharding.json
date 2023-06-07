@@ -1,0 +1,5 @@
+use config;
+db.settings.save( { _id:"chunksize", value: 1 } );
+sh.enableSharding("kafka");
+sh.shardCollection("kafka.foo", { a:1, b:1} );
+sh.splitAt( "kafka.foo", { a:10, b:1 } );

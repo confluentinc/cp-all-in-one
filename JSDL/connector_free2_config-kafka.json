@@ -1,0 +1,10 @@
+{
+  "name": "free23b",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "topics": "kafka.kafka.foo",
+    "connection.uri": "mongodb+srv://test:test@free-oa4fi.mongodb.net/test?retryWrites=true&w=majority",
+    "database": "test",
+    "collection": "foo"
+  }
+}

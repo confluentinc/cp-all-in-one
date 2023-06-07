@@ -1,0 +1,37 @@
+-- Amazon RDS
+CREATE USER myuser IDENTIFIED BY PASSWORD DEFAULT TABLESPACE USERS;
+GRANT CREATE SESSION, SELECT ANY TRANSACTION, SELECT ANY DICTIONARY TO myuser;
+GRANT SELECT ON SYSTEM.LOGMNR_COL$ TO myuser;
+GRANT SELECT ON SYSTEM.LOGMNR_OBJ$ TO myuser;
+GRANT SELECT ON SYSTEM.LOGMNR_USER$ TO myuser;
+GRANT SELECT ON SYSTEM.LOGMNR_UID$ TO myuser;
+ALTER USER myuser QUOTA UNLIMITED ON USERS;
+
+GRANT CREATE SESSION TO myuser;
+GRANT CREATE TABLE TO myuser;
+GRANT CREATE SEQUENCE TO myuser;
+GRANT CREATE TRIGGER TO myuser;
+GRANT LOGMINING TO myuser;
+
+--/
+begin
+  rdsadmin.rdsadmin_util.grant_sys_object('DBMS_LOGMNR', 'MYUSER', 'EXECUTE');
+end;
+/
+
+
+--/
+begin
+  rdsadmin.rdsadmin_util.alter_supplemental_logging('ADD');
+  rdsadmin.rdsadmin_util.alter_supplemental_logging('ADD','ALL');
+end;
+/
+
+
+
+
+--ALTER DATABASE ADD SUPPLEMENTAL LOG DATA (ALL) COLUMNS;
+
+GRANT FLASHBACK ANY TABLE TO myuser;
+
+

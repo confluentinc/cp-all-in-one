@@ -1,0 +1,13 @@
+{
+  "name": "free2",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "topics": "charts.test.foo",
+    "connection.uri": "mongodb+srv://test:test@free-oa4fi.mongodb.net/test?retryWrites=true&w=majority",
+    "database": "test",
+    "collection": "foo",
+    "post.processor.chain": "com.mongodb.kafka.connect.sink.processor.BlacklistKeyProjector",
+    "key.projection.type": "blacklist",
+    "key.projection.list": "queryPlan"
+  }
+}

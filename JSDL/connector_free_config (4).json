@@ -1,0 +1,14 @@
+{
+  "name": "free",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "tasks.max": "3",
+    "key.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "config.action.reload": "restart",
+    "topics": "charts.test.foo",
+    "connection.uri": "mongodb+srv://test:test@free-oa4fi.mongodb.net/test?retryWrites=true&w=majority",
+    "database": "test",
+    "collection": "foo"
+  }
+}

@@ -1,0 +1,10 @@
+version: '2'
+services:
+  database:
+    image: store/oracle/database-enterprise:12.2.0.1
+    volumes:
+      - /Volumes/SanDisk/oradata:/ORCL # persistent oracle database data.
+    ports:
+      - 1521:1521
+      - 8080:8080
+      - 5500:5500

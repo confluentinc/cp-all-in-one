@@ -1,0 +1,76 @@
+{
+        "namespace": "ksql",
+        "name": "transactions",
+        "type": "record",
+        "fields": [
+                {"name": "registertime", "type": {
+                    "type": "long",
+                    "arg.properties": {
+                        "range": {
+                            "min": 1487715775521,
+                            "max": 1519273364600
+                        }
+                    }
+                }},
+                {"name": "userid", "type": {
+                    "type": "string",
+                    "arg.properties": {
+                       "options": [
+                        "464",
+                        "693",
+                        "886",
+                        "224",
+                        "200"
+                    ]
+                    }
+                    }
+                },
+                {"name": "branch", "type": {
+                    "type": "string",
+                    "arg.properties": {
+                        "regex": "Branch[1-9]{1,4}"
+                    }
+                }},
+                {"name": "Origin", "type": {
+                    "type": "string",
+                    "arg.properties": {
+                      "options": [
+                        "LaCaixa",
+                        "Santander", 
+                        "ING",
+                        "BBVA" 
+                    ]
+                    }
+                }}, 
+                {"name": "Destination", "type": {
+                  "type": "string",
+                  "arg.properties": {
+                      "options": [
+                          "LaCaixa",
+                          "ING",
+                          "CajaMar",
+                          "CajaRural",
+                          "EVOBanco",
+                          "Santander",
+                          "BBVA",
+                          "Sabadell",
+                          "Bankia",
+                          "Abanca",
+                          "LiberBank",
+                          "BancaMarch"
+                      ]
+                  }
+              }},     
+                    {"name": "amount", "type": {
+                        "type": "int",
+                        "arg.properties": {
+                            "range": {
+                                "min": -3000,
+                                "max": 5000
+                            }
+                        }
+                    }}
+                
+
+        ]
+}

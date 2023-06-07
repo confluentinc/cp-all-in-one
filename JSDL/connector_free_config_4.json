@@ -1,0 +1,16 @@
+{
+  "name": "free",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "tasks.max": "3",
+    "key.converter":"org.apache.kafka.connect.json.JsonConverter",
+		"key.converter.schemas.enable":"false",
+		"value.converter":"org.apache.kafka.connect.json.JsonConverter",
+		"value.converter.schemas.enable":"false",
+    "config.action.reload": "restart",
+    "topics": "charts.test.foo",
+    "connection.uri": "mongodb+srv://test:test@free-oa4fi.mongodb.net/test?retryWrites=true&w=majority",
+    "database": "test",
+    "collection": "foo"
+  }
+}

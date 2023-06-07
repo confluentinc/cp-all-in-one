@@ -1,0 +1,11 @@
+{
+  "name": "free",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "topics": "charts.test.foo",
+    "connection.uri": "mongodb+srv://test:test@free-oa4fi.mongodb.net/test?retryWrites=true&w=majority",
+    "database": "charts",
+    "collection": "foo",
+    "max.num.retries": "2"
+  }
+}

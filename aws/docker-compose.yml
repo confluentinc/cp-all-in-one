@@ -2,17 +2,18 @@
 version: '2'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.5.1
+    image: "confluentinc/cp-zookeeper:${CONF_VER}"
     hostname: zookeeper
     container_name: zookeeper
     ports:
       - "2181:2181"
     environment:
+      TZ: ${TZ_SET}
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
   broker:
-    image: confluentinc/cp-server:5.5.1
+    image: "confluentinc/cp-server:${CONF_VER}"
     hostname: broker
     container_name: broker
     depends_on:
@@ -21,6 +22,7 @@ services:
       - "9092:9092"
       - "9101:9101"
     environment:
+      TZ: ${TZ_SET}
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
@@ -37,10 +39,10 @@ services:
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
-      KAFKA_LOG4J_LOGGERS: org.apache.kafka=INFO
+      
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.5.1
+    image: "confluentinc/cp-schema-registry:${CONF_VER}"
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -49,11 +51,12 @@ services:
     ports:
       - "8081:8081"
     environment:
+      TZ: ${TZ_SET}
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
 
   connect:
-    image: cnfldemos/cp-server-connect-datagen:0.3.2-5.5.0
+    image: "cnfldemos/cp-server-connect-datagen:0.3.2-5.5.0"
     hostname: connect
     container_name: connect
     depends_on:
@@ -63,6 +66,7 @@ services:
     ports:
       - "8083:8083"
     environment:
+      TZ: ${TZ_SET}
       CONNECT_BOOTSTRAP_SERVERS: 'broker:29092'
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
       CONNECT_REST_PORT: 8083
@@ -81,20 +85,19 @@ services:
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       # CLASSPATH required due to CC-2422
-      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-5.5.1.jar
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-latest.jar
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
       CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR,com.mongodb.kafka=DEBUG
+      CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY: 'All'
     # Me he inventado estas lineas para intentar poder meter mis clases custom
       command: "bash -c 'if [ ! -d /usr/share/confluent-hub-components/confluentinc-kafka-connect-datagen ]; then echo \"WARNING: Did not find directory for kafka-connect-datagen (did you remember to run: docker-compose up -d --build ?)\"; fi ; /etc/confluent/docker/run'"
     volumes:
-      - /Users/juan.soto/Documents/GitHub/mongo-kafka-abanca/build/confluent/kafka-connect-mongodb:/usr/share/confluent-hub-components/kafka-connect-mongodb
-    extra_hosts:
-      - "localhost:192.168.1.52"
+      - ./confluent-hub-components:/usr/share/confluent-hub-components
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:5.5.1
+    image: "confluentinc/cp-enterprise-control-center:${CONF_VER}"
     hostname: control-center
     container_name: control-center
     depends_on:
@@ -106,6 +109,7 @@ services:
     ports:
       - "9021:9021"
     environment:
+      TZ: ${TZ_SET}
       CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
       CONTROL_CENTER_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       CONTROL_CENTER_CONNECT_CLUSTER: 'connect:8083'
@@ -119,7 +123,7 @@ services:
       PORT: 9021
 
   ksqldb-server:
-    image: confluentinc/cp-ksqldb-server:5.5.1
+    image: "confluentinc/cp-ksqldb-server:${CONF_VER}"
     hostname: ksqldb-server
     container_name: ksqldb-server
     depends_on:
@@ -128,7 +132,19 @@ services:
     ports:
       - "8088:8088"
     environment:
+      # de la documentación https://kafka-tutorials.confluent.io/rekey-with-function/ksql.html
+      #KSQL_CONFIG_DIR: "/etc/ksqldb"
+      #KSQL_KSQL_EXTENSION_DIR: "/etc/ksqldb/ext/"
+      #KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksqldb/log4j.properties"
+      #KSQL_BOOTSTRAP_SERVERS: "broker:29092"
+      #KSQL_HOST_NAME: ksqldb-server
+      #KSQL_LISTENERS: "http://0.0.0.0:8088"
+      #KSQL_CACHE_MAX_BYTES_BUFFERING: 0
+      #KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      # previo original
+      TZ: ${TZ_SET}
       KSQL_CONFIG_DIR: "/etc/ksql"
+      KSQL_KSQL_EXTENSION_DIR: "/etc/ksqldb/ext/"
       KSQL_BOOTSTRAP_SERVERS: "broker:29092"
       KSQL_HOST_NAME: ksqldb-server
       KSQL_LISTENERS: "http://0.0.0.0:8088"
@@ -137,9 +153,17 @@ services:
       KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
       KSQL_KSQL_CONNECT_URL: "http://connect:8083"
+      KSQL_LOG4J_ROOT_LOGLEVEL: "INFO"
+      KSQL_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
+      # --- ksqlDB processing log config ---
+      #KSQL_LOG4J_PROCESSING_LOG_BROKERLIST: "broker:29092"
+      #KSQL_LOG4J_PROCESSING_LOG_TOPIC: ksql-processing-log-topic-name
+      #KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: ksql-processing-log-topic-name
+      #KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
+      #KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
 
   ksqldb-cli:
-    image: confluentinc/cp-ksqldb-cli:5.5.1
+    image: "confluentinc/cp-ksqldb-cli:${CONF_VER}"
     container_name: ksqldb-cli
     depends_on:
       - broker
@@ -149,7 +173,7 @@ services:
     tty: true
 
   ksql-datagen:
-    image: confluentinc/ksqldb-examples:5.5.1
+    image: "confluentinc/ksqldb-examples:${CONF_VER}"
     hostname: ksql-datagen
     container_name: ksql-datagen
     depends_on:
@@ -165,13 +189,15 @@ services:
                        sleep 11 && \
                        tail -f /dev/null'"
     environment:
+      TZ: ${TZ_SET}
       KSQL_CONFIG_DIR: "/etc/ksql"
+      KSQL_KSQL_EXTENSION_DIR: "/etc/ksqldb/ext/"
       STREAMS_BOOTSTRAP_SERVERS: broker:29092
       STREAMS_SCHEMA_REGISTRY_HOST: schema-registry
       STREAMS_SCHEMA_REGISTRY_PORT: 8081
 
   rest-proxy:
-    image: confluentinc/cp-kafka-rest:5.5.1
+    image: "confluentinc/cp-kafka-rest:${CONF_VER}"
     depends_on:
       - zookeeper
       - broker
@@ -181,7 +207,9 @@ services:
     hostname: rest-proxy
     container_name: rest-proxy
     environment:
+      TZ: ${TZ_SET}
       KAFKA_REST_HOST_NAME: rest-proxy
       KAFKA_REST_BOOTSTRAP_SERVERS: 'broker:29092'
       KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
       KAFKA_REST_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+  

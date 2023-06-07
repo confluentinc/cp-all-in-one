@@ -1,0 +1,10 @@
+{
+  "name": "mongos_2",
+  "config": {
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "topics": "kafka1.kafka.foo",
+    "connection.uri": "mongodb+srv://test:test@kafka.oa4fi.mongodb.net/test?retryWrites=true&w=majority",
+    "database": "kafka",
+    "collection": "foo"
+  }
+}
