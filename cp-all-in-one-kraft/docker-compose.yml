@@ -70,7 +70,7 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
 
   connect:
-    image: confluentinc/cp-kafka-connect:7.4.0
+    image: cnfldemos/cp-server-connect-datagen:0.6.0-7.3.0
     hostname: connect
     container_name: connect
     depends_on:
