@@ -22,23 +22,19 @@ configures them to connect to Confluent Cloud.
 
 #### Setup
 
-#. By default, the example uses Schema Registry running in a local Docker container. 
+1. By default, the example uses Schema Registry running in a local Docker container. 
 
-#. By default, the example uses ksqlDB running in a local Docker container. 
+1. By default, the example uses ksqlDB running in a local Docker container. 
 
-#. Generate and source a file of ENV variables used by Docker to set the bootstrap
+1. Generate and source a file of ENV variables used by Docker to set the bootstrap
    servers and security configuration, which requires you to first
    create a local configuration file with connection information. 
 
-#. Validate your credentials to Confluent Cloud Schema Registry:
-
-
+1. Validate your credentials to Confluent Cloud Schema Registry:
 
       curl -u $SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO $SCHEMA_REGISTRY_URL/subjects
 
-#. Validate your credentials to Confluent Cloud ksqlDB:
-
-
+1. Validate your credentials to Confluent Cloud ksqlDB:
 
       curl -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" -u $KSQLDB_BASIC_AUTH_USER_INFO $KSQLDB_ENDPOINT/info
 
@@ -47,39 +43,35 @@ configures them to connect to Confluent Cloud.
 Make sure you completed the steps in the Setup section above before
 proceeding.
 
-#. Clone the `confluentinc/cp-all-in-one` GitHub repository.
+1. Clone the `confluentinc/cp-all-in-one` GitHub repository.
 
        git clone https://github.com/confluentinc/cp-all-in-one.git
 
-#. Navigate to the `cp-all-in-one-cloud` directory.
+1. Navigate to the `cp-all-in-one-cloud` directory.
 
        cd cp-all-in-one-cloud
 
-#. Checkout the `<github-branch>` branch.
+1. Checkout the `<github-branch>` branch.
 
        git checkout <github-branch>
 
-#. To bring up all services locally, at once:
+1. To bring up all services locally, at once:
 
       docker-compose up -d
 
-#. To bring up just Schema Registry locally (if you are not using Confluent Cloud Schema Registry):
+1. To bring up just Schema Registry locally (if you are not using Confluent Cloud Schema Registry):
 
       docker-compose up -d schema-registry
 
-#. To bring up Connect locally: the `cp-all-in-one-cloud/docker-compose.yml`: file has a container called `connect` that is running a custom Docker image `cnfldemos/cp-server-connect-datagen <https://hub.docker.com/r/cnfldemos/cp-server-connect-datagen/>`__ which pre-bundles the `kafka-connect-datagen <https://www.confluent.io/hub/confluentinc/kafka-connect-datagen>`__ connector. Start this Docker container:
+1. To bring up Connect locally: the `cp-all-in-one-cloud/docker-compose.yml`: file has a container called `connect` that is running a custom Docker image `cnfldemos/cp-server-connect-datagen <https://hub.docker.com/r/cnfldemos/cp-server-connect-datagen/>`__ which pre-bundles the `kafka-connect-datagen <https://www.confluent.io/hub/confluentinc/kafka-connect-datagen>`__ connector. Start this Docker container:
 
       docker-compose up -d connect
 
-   If you want to run Connect with any other connector, you need to first build a custom Docker image that adds the desired connector to the base Kafka Connect Docker image (see :connect-common:`Add Connectors or Software|extending.html`).  Search through `Confluent Hub <https://www.confluent.io/hub/>`__ to find the appropriate connector and set `CONNECTOR_NAME`, then build the new, custom Docker container using the provided `Docker/Dockerfile`:
-
-
+   If you want to run Connect with any other connector, you need to first build a custom Docker image that adds the desired connector to the base Kafka Connect Docker image (see [Add Connectors or Software](https://docs.confluent.io/platform/current/connect/extending.html)).  Search through [Confluent Hub](https://www.confluent.io/hub/) to find the appropriate connector and set `CONNECTOR_NAME`, then build the new, custom Docker container using the provided `Docker/Dockerfile`:
 
       docker build --build-arg CONNECTOR_NAME=${CONNECTOR_NAME} -t localbuild/connect_custom_example:latest -f ../Docker/Dockerfile .
 
    Start this custom Docker container in one of two ways:
-
-
 
       # Override the original Docker Compose file
       docker-compose -f docker-compose.yml -f ../Docker/connect.overrides.yml up -d connect
@@ -87,33 +79,23 @@ proceeding.
       # Run a new Docker Compose file
       docker-compose -f docker-compose.connect.local.yml up -d
 
-#. To bring up |c3| locally:
-
-
+1. To bring up Control Center locally:
 
       docker-compose up -d control-center
 
-#. To bring up ksqlDB locally (if you are not using Confluent Cloud ksqlDB):
-
-
+1. To bring up ksqlDB locally (if you are not using Confluent Cloud ksqlDB):
 
       docker-compose up -d ksqldb-server
 
-#. To bring up ksqlDB CLI locally, assuming you are using Confluent Cloud ksqldB, if you want to just run a Docker container that is transient:
-
-
+1. To bring up ksqlDB CLI locally, assuming you are using Confluent Cloud ksqldB, if you want to just run a Docker container that is transient:
 
       docker run -it confluentinc/cp-ksqldb-cli:5.5.0 -u $(echo $KSQLDB_BASIC_AUTH_USER_INFO | awk -F: '{print $1}') -p $(echo $KSQLDB_BASIC_AUTH_USER_INFO | awk -F: '{print $2}') $KSQLDB_ENDPOINT
 
    If you want to run a Docker container for ksqlDB CLI from the Docker Compose file and connect to Confluent Cloud ksqlDB in a separate step:
 
-
-
       docker-compose up -d ksqldb-cli
 
-#. To bring up |crest| locally:
-
-
+1. To bring up REST Proxy locally:
 
       docker-compose up -d rest-proxy
 
@@ -128,7 +110,7 @@ The script uses the Confluent Cloud CLI to dynamically do the following in Confl
 -  Create a new environment.
 -  Create a new service account.
 -  Create a new Kafka cluster and associated credentials.
--  Enable |sr-ccloud| and associated credentials.
+-  Enable Schema Registry in Confluent Cloud and associated credentials.
 -  Create a new ksqlDB app and associated credentials.
 -  Create ACLs with wildcard for the service account.
 -  Generate a local configuration file with all above connection information, useful for other demos/automation.
@@ -147,27 +129,19 @@ Read the blog post [Creating a Serverless Environment for Testing Your Apache Ka
 Use `cp-all-in-one` to run the Confluent Platform stack on-premesis.
 This Docker Compose file launches all services in Confluent Platform, and runs them in containers in your local host.
 
-#. Clone the `confluentinc/cp-all-in-one` GitHub repository.
-
-
+1. Clone the `confluentinc/cp-all-in-one` GitHub repository.
 
        git clone https://github.com/confluentinc/cp-all-in-one.git
 
-#. Navigate to the `cp-all-in-one` directory.
-
-   .. codewithvars:: bash
+1. Navigate to the `cp-all-in-one` directory.
 
        cd cp-all-in-one
 
-#. Checkout the `<github-branch>` branch.
-       
-   .. codewithvars:: bash
+1. Checkout the `<github-branch>` branch.
 
        git checkout <github-branch>
 
-#. To bring up all services:
-
-
+1. To bring up all services:
 
       docker-compose up -d
 
@@ -177,27 +151,19 @@ This Docker Compose file launches all services in Confluent Platform, and runs t
 Use `cp-all-in-one-community` to run only the community services from Confluent Platform on-premises.
 This Docker Compose file launches all community services and runs them in containers in your local host.
 
-#. Clone the `confluentinc/cp-all-in-one` GitHub repository.
-
-
+1. Clone the `confluentinc/cp-all-in-one` GitHub repository.
 
        git clone https://github.com/confluentinc/cp-all-in-one.git
 
-#. Navigate to the `cp-all-in-one-community` directory.
-
-   .. codewithvars:: bash
+1. Navigate to the `cp-all-in-one-community` directory.
 
        cd cp-all-in-one-community
 
-#. Checkout the `<github-branch>` branch.
-       
-   .. codewithvars:: bash
+1. Checkout the `<github-branch>` branch.
 
        git checkout <github-branch>
 
-#. To bring up all services:
-
-
+1. To bring up all services:
 
       docker-compose up -d
 
