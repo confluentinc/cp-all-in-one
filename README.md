@@ -1,5 +1,14 @@
-![image](images/confluent-logo-300-2.png)
-  
-# Documentation
+# Confluent Platform All-In-One
 
-You can find the documentation and instructions for this repo at [https://docs.confluent.io/platform/current/tutorials/build-your-own-demos.html](https://docs.confluent.io/platform/current/tutorials/build-your-own-demos.html?utm_source=github&utm_medium=demo&utm_campaign=ch.examples_type.community_content.cp-all-in-one)
+This repository contains a set of Docker Compose files for running Confluent Platform. It is organized as follows:
+
+1. `cp-all-in-one`: Confluent Enterprise License version of Confluent Platform, including Confluent Server (and ZooKeeper),
+Schema Registry, a Kafka Connect worker with the Datagen Source connector plugin installed, Confluent Control Center,
+REST Proxy, and ksqlDB.
+2. `cp-all-in-one-community`: Confluent Community License version of Confluent Platform include the Kafka broker,
+Schema Registry, a Kafka Connect worker with the Datagen Source connector plugin installed, Confluent Control Center,
+REST Proxy, and ksqlDB.
+3. `cp-all-in-one-cloud`: Docker Compose files that can be used to run Confluent Platform components (Schema Registry, a Kafka Connect worker with the Datagen Source connector plugin installe, Confluent Control Center,
+REST Proxy, or ksqlDB) against Confluent Cloud.
+
+Please refer to the instructions in each example folder's README.
