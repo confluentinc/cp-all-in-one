@@ -3,7 +3,7 @@ version: '2'
 services:
 
   broker:
-    image: confluentinc/cp-kafka:6.2.x-latest
+    image: confluentinc/cp-kafka:6.2.13
     hostname: broker
     container_name: broker
     ports:
@@ -31,7 +31,7 @@ services:
     command: "bash -c 'if [ ! -f /tmp/update_run.sh ]; then echo \"ERROR: Did you forget the update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/update_run.sh && /etc/confluent/docker/run ; fi'"
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:6.2.x-latest
+    image: confluentinc/cp-schema-registry:6.2.13
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -71,7 +71,7 @@ services:
       CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
 
   rest-proxy:
-    image: confluentinc/cp-kafka-rest:6.2.x-latest
+    image: confluentinc/cp-kafka-rest:6.2.13
     depends_on:
       - broker
       - schema-registry
