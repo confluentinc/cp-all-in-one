@@ -4,4 +4,9 @@
 
 Securing your Apache Kafka cluster can involve various security features.
 For an example that shows security features in action, see [cp-demo](https://docs.confluent.io/platform/current/tutorials/cp-demo/docs/index.html?utm_source=github&utm_medium=demo&utm_campaign=ch.examples_type.community_content.cp-all-in-one).
-Refer to cp-demo's [docker-compose.yml](https://github.com/confluentinc/cp-demo/blob/7.6.x/docker-compose.yml) for a configuration reference.
+
+## OAuth
+[confluent-server-oauth](confluent-server-oauth/README.md) demonstrates how to configure OAuth in Confluent Server.
+Right now as of CP 7.6, this example only supports confluent server (Kafka and MDS) and does not support components Confluent Control Center.
+
+Other components such as Confluent Control Center, Connect, and Schema Registry still requires LDAP for authentication.
