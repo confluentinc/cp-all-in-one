@@ -5,7 +5,7 @@
 OAuth is an open standard to obtain limited access to an account, such as Keycloak, or Okta, without
 exposing user credentials.
 This Docker Compose setup provides a container-based experience for getting started with Confluent
-Platform OAuth Early Access (EA).
+Platform OAuth.
 This creates a minimal CP setup (consisting only of the broker and MDS) operating seamlessly *
 *without** LDAP.
 
@@ -22,7 +22,7 @@ This will:
 1. Start a Keycloak server on port 8080. This acts as the OAuth identity provider.
 2. Run Confluent Server with Role-based access control (RBAC).
 3. Create a new listener `EXTERNAL` for SASL/OAuthBearer in Confluent Server.
-4. Configure Confluent Server to connect to a local keycloak identity provider.
+4. Configure Confluent Server to connect to local Keycloak identity provider.
 
 ## RBAC using OAuth
 
@@ -43,7 +43,7 @@ This will:
    For example, granting access to client app `client_app1` over topic `test` of Kafka cluster `vHCgQyIrRHG8Jv27qI2h3Q`, replace `<access-token>` with token obtained above:
 
     ```shell
-    curl -vvv \
+    curl -v \
       -H "Authorization: Bearer <access-token>" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json" \
@@ -53,7 +53,7 @@ This will:
 
    Also assign access a consumer group.
    ```shell
-    curl -vvv \
+    curl -v \
       -H "Authorization: Bearer <access-token>" \
       -H "Content-Type: application/json" \
       -H "Accept: application/json" \
