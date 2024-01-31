@@ -1,20 +1,6 @@
 ---
 version: '2'
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.6.x-latest
-    hostname: zookeeper
-    container_name: zookeeper
-    healthcheck:
-      test: echo srvr | nc zookeeper 2181 || exit 1
-      retries: 20
-      interval: 10s
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.5
     hostname: keycloak
@@ -44,8 +30,6 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
-      zookeeper:
-        condition: service_healthy
     healthcheck:
       test: curl -fail --silent --insecure http://broker1:8091/v1/metadata/id || exit 1
       interval: 10s
@@ -58,9 +42,14 @@ services:
       - "8091:8091"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://broker1:29092,CONTROLLER://broker1:29093,PLAINTEXT_HOST://0.0.0.0:9092,INTERNAL://localhost:9093,EXTERNAL://0.0.0.0:9095
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker1:29092,PLAINTEXT_HOST://localhost:9092,INTERNAL://localhost:9093,EXTERNAL://localhost:9095
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker1:29093'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      CLUSTER_ID: 'vHCgQyIrRHG8Jv27qI2h3Q'
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
@@ -97,7 +86,7 @@ services:
 
       # Configure Confluent Server Authorizer
       KAFKA_AUTHORIZER_CLASS_NAME: io.confluent.kafka.security.authorizer.ConfluentServerAuthorizer
-      KAFKA_CONFLUENT_AUTHORIZER_ACCESS_RULE_PROVIDERS: CONFLUENT,ZK_ACL
+      KAFKA_CONFLUENT_AUTHORIZER_ACCESS_RULE_PROVIDERS: CONFLUENT,KRAFT_ACL
 
       # MDS
       KAFKA_CONFLUENT_METADATA_TOPIC_REPLICATION_FACTOR: 1

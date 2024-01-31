@@ -26,7 +26,7 @@ This will:
 
 ## RBAC using OAuth
 
-1. Get the Kafka cluster ID from broker logs or following REST
+1. Get the Kafka cluster ID from docker-compose file or broker logs or following REST
    API : http://localhost:8091/v1/metadata/id
 
 2. Get an access token from Keycloak passing the client credentials of super user client app:
@@ -40,25 +40,25 @@ This will:
     ```
 
 3. Grant access to other client apps or users by assigning roles to them.
-   For example, granting access to client app `client_app1` over topic `test` replace `<kafka-cluster>` (obtained in first step) and `<access-token>` (with token obtained above):
+   For example, granting access to client app `client_app1` over topic `test` of Kafka cluster `vHCgQyIrRHG8Jv27qI2h3Q`, replace `<access-token>` with token obtained above:
 
     ```shell
-    curl -vvv
+    curl -vvv \
       -H "Authorization: Bearer <access-token>" \
-      -H "Content-Type: application/json"
-      -H "Accept: application/json"
-      -X POST 'http://localhost:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings'
-      -d '{"scope":{"clusters":{"kafka-cluster":"<kafka-cluster>"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"test", "patternType":"LITERAL"}]}'
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -X POST 'http://localhost:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings' \
+      -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"test", "patternType":"LITERAL"}]}'
     ```
 
    Also assign access a consumer group.
    ```shell
-    curl -vvv
+    curl -vvv \
       -H "Authorization: Bearer <access-token>" \
-      -H "Content-Type: application/json"
-      -H "Accept: application/json"
-      -X POST 'http://localhost:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings'
-      -d '{"scope":{"clusters":{"kafka-cluster":"<kafka-cluster>"}}, "resourcePatterns":[{"resourceType":"Group", "name":"console-consumer-group", "patternType":"LITERAL"}]}'
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -X POST 'http://localhost:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings' \
+      -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"console-consumer-group", "patternType":"LITERAL"}]}'
     ```
 
 ## Produce and Consume to Kafka using OAuth
