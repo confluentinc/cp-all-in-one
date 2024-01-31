@@ -7,6 +7,6 @@ For an example that shows security features in action, see [cp-demo](https://doc
 
 ## OAuth
 [confluent-server-oauth](confluent-server-oauth/README.md) demonstrates how to configure OAuth in Confluent Server.
-Right now as of CP 7.6, this example only supports confluent server (Kafka and MDS) and does not support components Confluent Control Center.
+Right now, this example only supports confluent server (Kafka and MDS) and does not support components Confluent Control Center.
 
 Other components such as Confluent Control Center, Connect, and Schema Registry still requires LDAP for authentication.

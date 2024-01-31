@@ -14,20 +14,20 @@ This creates a minimal CP setup (consisting only of the broker and MDS) operatin
 To run the Docker Compose setup, execute the following command:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 This will:
 
 1. Start a Keycloak server on port 8080. This acts as the OAuth identity provider.
-2. Run Confluent Server CP 7.6 with Role-based access control (RBAC).
+2. Run Confluent Server with Role-based access control (RBAC).
 3. Create a new listener `EXTERNAL` for SASL/OAuthBearer in Confluent Server.
 4. Configure Confluent Server to connect to a local keycloak identity provider.
 
 ## RBAC using OAuth
 
-1. Get the kafka cluster id from broker logs or following rest
-   api : http://localhost:8091/v1/metadata/id
+1. Get the Kafka cluster ID from broker logs or following REST
+   API : http://localhost:8091/v1/metadata/id
 
 2. Get an access token from Keycloak passing the client credentials of super user client app:
 
