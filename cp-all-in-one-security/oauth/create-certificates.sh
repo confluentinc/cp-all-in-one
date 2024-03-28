@@ -4,9 +4,10 @@ create_certificates(){
   # Generate keys and certificates used by MDS
 
   echo -e "Generate keys and certificates used for MDS"
-  mkdir -p /tmp/conf
+  rm -rf ./keypair/keypair.pem ./keypair/public.pem
+  mkdir -p ./keypair
 
-  openssl genrsa -out /tmp/conf/keypair.pem 2048; openssl rsa -in /tmp/conf/keypair.pem -outform PEM -pubout -out /tmp/conf/public.pem
+  openssl genrsa -out ./keypair/keypair.pem 2048; openssl rsa -in ./keypair/keypair.pem -outform PEM -pubout -out ./keypair/public.pem
 }
 
 create_certificates

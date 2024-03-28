@@ -43,8 +43,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092,INTERNAL://localhost:9093,EXTERNAL://0.0.0.0:9095
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092,INTERNAL://localhost:9093,EXTERNAL://localhost:9095
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092,INTERNAL://localhost:9093,EXTERNAL://broker:9095
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092,INTERNAL://localhost:9093,EXTERNAL://broker:9095
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
@@ -63,8 +63,10 @@ services:
       CONFLUENT_METRICS_ENABLE: 'true'
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_SUPER_USERS: User:admin;User:ANONYMOUS;User:testuser1;User:superuser_client_app
-      KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=INFO"
+      #User:e5172ec0-25d6-4684-8614-f2adb23c529d
+      #KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=INFO"
       KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
+      KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=DEBUG,io.confluent.rest-utils=DEBUG,io.confluent.rbacapi=DEBUG,io.confluent.tokenapi=DEBUG,io.confluent.security.auth=DEBUG,io.confluent.security.store=DEBUG,io.confluent.common.security.jetty=DEBUG"
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN, OAUTHBEARER
       KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
@@ -79,9 +81,10 @@ services:
       KAFKA_LISTENER_NAME_EXTERNAL_SASL_ENABLED_MECHANISMS: OAUTHBEARER
       KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
       KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_EXPECTED_AUDIENCE: account
-      KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_JAAS_CONFIG: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required ;
-      KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerValidatorCallbackHandler
+      KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_JAAS_CONFIG: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required unsecuredLoginStringClaim_sub="thePrincipalName" publicKeyPath="/tmp/conf/public.pem";
+      KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.confluent.kafka.server.plugins.auth.token.CompositeBearerValidatorCallbackHandler
       KAFKA_LISTENER_NAME_EXTERNAL_PRINCIPAL_BUILDER_CLASS: io.confluent.kafka.security.authenticator.OAuthKafkaPrincipalBuilder
+      KAFKA_LISTENER_NAME_CONTROLLER_PRINCIPAL_BUILDER_CLASS: io.confluent.kafka.security.authenticator.OAuthKafkaPrincipalBuilder
       KAFKA_CONFLUENT_OAUTH_GROUPS_CLAIM_NAME: groups
 
       # Configure Confluent Server Authorizer
@@ -97,14 +100,38 @@ services:
       KAFKA_CONFLUENT_METADATA_SERVER_OPENAPI_ENABLE: 'true'
       KAFKA_CONFLUENT_METADATA_SERVER_USER_STORE: OAUTH
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
-      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_ISSUER: http://localhost:8080/realms/cp
+      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_ISSUER: http://keycloak:8080/realms/cp
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_AUDIENCE: account
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_SUB_CLAIM_NAME: sub
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_GROUPS_CLAIM_NAME: groups
 
+       # EmbeddedKafkaRest: Kafka Client Configuration
+      KAFKA_KAFKA_REST_BOOTSTRAP_SERVERS: SASL_PLAINTEXT://broker:9095
+      KAFKA_KAFKA_REST_CLIENT_SECURITY_PROTOCOL: SASL_PLAINTEXT
+
+      # EmbeddedKafkaRest: HTTP Auth Configuration
+      KAFKA_KAFKA_REST_KAFKA_REST_RESOURCE_EXTENSION_CLASS: io.confluent.kafkarest.security.KafkaRestSecurityResourceExtension
+      KAFKA_KAFKA_REST_AUTHENTICATION_ROLES: '**'
+      KAFKA_KAFKA_REST_REST_SERVLET_INITIALIZOR_CLASSES: io.confluent.common.security.jetty.initializer.AuthenticationHandler
+      KAFKA_KAFKA_REST_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
+      KAFKA_KAFKA_REST_OAUTHBEARER_EXPECTED_ISSUER: http://keycloak:8080/realms/cp
+      KAFKA_KAFKA_REST_OAUTHBEARER_EXPECTED_AUDIENCE: account
+      KAFKA_KAFKA_REST_OAUTHBEARER_SUB_CLAIM_NAME: sub
+      KAFKA_KAFKA_REST_OAUTHBEARER_GROUPS_CLAIM_NAME: groups
+      KAFKA_KAFKA_REST_PUBLIC_KEY_PATH: /tmp/conf/public.pem
+      
+      # EmbeddedKafkaRest: MDS Client configuration
+      KAFKA_KAFKA_REST_CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://broker:8091
+      KAFKA_KAFKA_REST_CONFLUENT_METADATA_HTTP_AUTH_CREDENTIALS_PROVIDER: OAUTHBEARER
+      KAFKA_KAFKA_REST_CONFLUENT_METADATA_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      KAFKA_KAFKA_REST_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_ID: rp_client_app
+      KAFKA_KAFKA_REST_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: rp_client_app_secret
+      KAFKA_KAFKA_REST_CONFLUENT_METADATA_SERVER_URLS_MAX_AGE_MS: 60000
+      KAFKA_KAFKA_REST_CLIENT_CONFLUENT_METADATA_SERVER_URLS_MAX_AGE_MS: 60000
+
     volumes:
-      - ./create-certificates.sh:/tmp/create-certificates.sh
-    command: "bash -c 'if [ ! -f /tmp/create-certificates.sh ]; then echo \"ERROR: Did you forget the create-certificates.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/create-certificates.sh && /etc/confluent/docker/run ; fi'"
+      - ./keypair:/tmp/conf
+    command: "bash -c 'if [ ! -f /tmp/conf/keypair.pem ]; then echo \"ERROR: Did you forget the create-certificates.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /etc/confluent/docker/run ; fi'"
 
   schema-registry:
     image: confluentinc/cp-schema-registry:master-latest
@@ -115,20 +142,38 @@ services:
         condition: service_healthy
     ports:
       - "8081:8081"
+    volumes:
+      - ./keypair:/tmp/conf
     environment:
 
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:9095'
       SCHEMA_REGISTRY_GROUP_ID: schema-registry-demo
 
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+              clientId="sr_client_app" \
+              clientSecret="sr_client_app_secret";
+
+
       # Enable OAuth in SR server
+      SCHEMA_REGISTRY_AUTHENTICATION_ROLES: '**'
       SCHEMA_REGISTRY_REST_SERVLET_INITIALIZOR_CLASSES: io.confluent.common.security.jetty.initializer.AuthenticationHandler
       SCHEMA_REGISTRY_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
-      SCHEMA_REGISTRY_OAUTHBEARER_EXPECTED_ISSUER: http://localhost:8080/realms/cp
+      SCHEMA_REGISTRY_OAUTHBEARER_EXPECTED_ISSUER: http://keycloak:8080/realms/cp
       SCHEMA_REGISTRY_OAUTHBEARER_EXPECTED_AUDIENCE: account
       SCHEMA_REGISTRY_OAUTHBEARER_SUB_CLAIM_NAME: sub
       SCHEMA_REGISTRY_OAUTHBEARER_GROUPS_CLAIM_NAME: groups
+
+      SCHEMA_REGISTRY_RESOURCE.EXTENSION.CLASS: io.confluent.kafka.schemaregistry.security.SchemaRegistrySecurityResourceExtension
+      SCHEMA_REGISTRY_CONFLUENT.SCHEMA.REGISTRY.AUTHORIZER.CLASS: io.confluent.kafka.schemaregistry.security.authorizer.rbac.RbacAuthorizer
+      SCHEMA_REGISTRY_CONFLUENT.SCHEMA.REGISTRY.AUTH.MECHANISM: JETTY_AUTH
+      SCHEMA_REGISTRY_PUBLIC_KEY_PATH: /tmp/conf/public.pem
 
 
       # For connecting to MDS
@@ -137,3 +182,261 @@ services:
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_ID: sr_client_app
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: sr_client_app_secret
+
+  connect:
+    image: confluentinc/cp-server-connect:master-latest
+    container_name: connect
+    restart: always
+    # healthcheck:
+    #   interval: 10s
+    #   retries: 20
+    #   test: curl --user connectAdmin:connectAdmin --fail --silent --insecure https://connect:8083/ --output /dev/null || exit 1
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./keypair:/tmp/conf
+    ports:
+      - 8083:8083
+    environment:
+      # CUB_CLASSPATH: '/usr/share/java/confluent-security/connect/*:/usr/share/java/kafka/*:/usr/share/java/cp-base-new/*'
+
+      CONNECT_BOOTSTRAP_SERVERS: broker:9095
+      CONNECT_LISTENERS: http://0.0.0.0:8083
+      CONNECT_GROUP_ID: "connect-cluster"
+      CONNECT_PRODUCER_CLIENT_ID: "connect-worker-producer"
+      CONNECT_PRODUCER_ENABLE_IDEMPOTENCE: 'true'
+
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-statuses
+
+      CONNECT_REPLICATION_FACTOR: 1
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
+      CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
+      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
+      CLASSPATH: "/usr/share/java/monitoring-interceptors/*"
+
+      # Connect Worker
+      CONNECT_SECURITY_PROTOCOL: SASL_PLAINTEXT
+
+      # Connect Producer
+      CONNECT_PRODUCER_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+      CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SECURITY_PROTOCOL: SASL_PLAINTEXT
+
+      # Connect Consumer
+      CONNECT_CONSUMER_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+
+      # RBAC
+      CONNECT_SASL_MECHANISM: 'OAUTHBEARER'
+      CONNECT_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      CONNECT_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+              clientId="connect_client_app" \
+              clientSecret="connect_client_app_secret";
+
+      # Allow overriding configs on the connector level
+      CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY: 'All'
+
+      # Producer
+      CONNECT_PRODUCER_SASL_MECHANISM: 'OAUTHBEARER'
+      CONNECT_PRODUCER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: 'OAUTHBEARER'
+      CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+              clientId="connect_client_app" \
+              clientSecret="connect_client_app_secret";
+
+      # Consumer
+      CONNECT_CONSUMER_SASL_MECHANISM: 'OAUTHBEARER'
+      CONNECT_CONSUMER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: 'OAUTHBEARER'
+      CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      
+      CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+              clientId="connect_client_app" \
+              clientSecret="connect_client_app_secret";
+
+      # Default admin config
+      CONNECT_ADMIN_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      CONNECT_ADMIN_SASL_MECHANISM: 'OAUTHBEARER'
+      CONNECT_ADMIN_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_ADMIN_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      CONNECT_ADMIN_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+              clientId="connect_client_app" \
+              clientSecret="connect_client_app_secret";
+      CONNECT_ADMIN_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.connect.truststore.jks
+      CONNECT_ADMIN_SSL_TRUSTSTORE_PASSWORD: confluent
+      CONNECT_ADMIN_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.connect.keystore.jks
+      CONNECT_ADMIN_SSL_KEYSTORE_PASSWORD: confluent
+      CONNECT_ADMIN_SSL_KEY_PASSWORD: confluent
+
+      # io.confluent.connect.security.ConnectSecurityExtension - RBAC
+      # io.confluent.connect.secretregistry.ConnectSecretRegistryExtension - Secret Registry
+      CONNECT_REST_EXTENSION_CLASSES: io.confluent.connect.security.ConnectSecurityExtension
+      #,io.confluent.connect.secretregistry.ConnectSecretRegistryExtension
+      CONNECT_REST_SERVLET_INITIALIZOR_CLASSES: 'io.confluent.common.security.jetty.initializer.AuthenticationHandler'
+      CONNECT_PUBLIC_KEY_PATH: /tmp/conf/public.pem
+
+      CONNECT_AUTHENTICATION_ROLES: '**'
+      CONNECT_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
+      CONNECT_OAUTHBEARER_EXPECTED_ISSUER: http://keycloak:8080/realms/cp
+      CONNECT_OAUTHBEARER_EXPECTED_AUDIENCE: account
+      CONNECT_OAUTHBEARER_SUB_CLAIM_NAME: sub
+      CONNECT_OAUTHBEARER_GROUPS_CLAIM_NAME: groups
+
+       # For connecting to MDS
+      CONNECT_CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://broker:8091
+      CONNECT_CONFLUENT_METADATA_HTTP_AUTH_CREDENTIALS_PROVIDER: OAUTHBEARER
+      CONNECT_CONFLUENT_METADATA_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      CONNECT_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_ID: connect_client_app
+      CONNECT_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: connect_client_app_secret
+
+      # Secret Registry
+      # CONNECT_CONFIG_PROVIDERS: 'secret'
+      # CONNECT_CONFIG_PROVIDERS_SECRET_CLASS: 'io.confluent.connect.secretregistry.rbac.config.provider.InternalSecretConfigProvider'
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_MASTER_ENCRYPTION_KEY: 'password1234'
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_BOOTSTRAP_SERVERS: kafka1:10091,kafka2:10092
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 2
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.connect.truststore.jks
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_TRUSTSTORE_PASSWORD: confluent
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.connect.keystore.jks
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEYSTORE_PASSWORD: confluent
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEY_PASSWORD: confluent
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_JAAS_CONFIG: |
+      #         org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+      #         username="sr_client_app" \
+      #         password="sr_client_app_secret";
+
+      # CONNECT_SSL_CIPHER_SUITES: ${SSL_CIPHER_SUITES}
+
+      # Reduce Connect memory utilization
+      KAFKA_JVM_PERFORMANCE_OPTS: -server -XX:+UseG1GC -XX:GCTimeRatio=1
+                  -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20
+                  -XX:MaxGCPauseMillis=10000 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ExplicitGCInvokesConcurrent
+                  -XX:MaxInlineLevel=15 -Djava.awt.headless=true
+    
+  # control-center:
+  #   image: confluentinc/cp-enterprise-control-center:master-latest
+  #   hostname: control-center
+  #   container_name: control-center
+  #   # healthcheck:
+  #   #   start_period: 10s
+  #   #   interval: 10s
+  #   #   retries: 20
+  #   #   test: curl --fail --silent http://control-center:9021 --output /dev/null || exit 1
+  #   depends_on:
+  #     broker:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./scripts/security/keypair:/tmp/conf
+  #     - ./scripts/security:/etc/kafka/secrets
+  #   # command: "rm -rf /usr/share/java/confluent-control-center/protobuf-java-util-3.24.4.jar && /etc/confluent/docker/launch;'"
+  #   ports:
+  #     - 9021:9021
+  #     - 9022:9022
+  #   environment:
+  #     CUB_CLASSPATH: '/usr/share/java/confluent-control-center/*:/usr/share/java/rest-utils/*:/usr/share/java/confluent-common/*:/usr/share/java/confluent-security/kafka-rest/*:/usr/share/java/kafka-rest/:/usr/share/java/cp-base-new/*'
+
+  #     # If using Confluent Health+ for monitoring and alerting, uncomment the line below to run in management mode.
+  #     # CONTROL_CENTER_MODE_ENABLE: "management"
+  #     # You can now remove all Control Center "STREAMS", "MONITORING", and "METRICS" configurations
+      
+  #     # general settings
+  #     CONTROL_CENTER_BOOTSTRAP_SERVERS: EXTERNAL://broker:9095
+  #     CONTROL_CENTER_REPLICATION_FACTOR: 1
+  #     CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+  #     CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL: DEBUG
+  #     CONTROL_CENTER_LOG4J_LOGLEVEL: DEBUG
+
+
+  #     # Control Center uses Kafka Streams to process metrics
+  #     CONTROL_CENTER_STREAMS_SECURITY_PROTOCOL: SASL_PLAINTEXT
+  #     CONTROL_CENTER_STREAMS_SASL_MECHANISM: OAUTHBEARER
+  #     CONTROL_CENTER_STREAMS_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+  #     CONTROL_CENTER_STREAMS_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+  #     CONTROL_CENTER_STREAMS_SASL_JAAS_CONFIG: |
+  #             org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+  #             clientId="sr_client_app" \
+  #             clientSecret="sr_client_app_secret";
+  #     # CONTROL_CENTER_STREAMS_SSL_CIPHER_SUITES: ${SSL_CIPHER_SUITES}
+
+  #     CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
+  #     CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+  #     CONTROL_CENTER_METRICS_TOPIC_REPLICATION: 1
+  #     CONTROL_CENTER_METRICS_TOPIC_PARTITIONS: 1
+
+  #     # Amount of heap to use for internal caches. Increase for better throughput
+  #     CONTROL_CENTER_STREAMS_CACHE_MAX_BYTES_BUFFERING: 100000000
+  #     CONTROL_CENTER_STREAMS_CONSUMER_REQUEST_TIMEOUT_MS: "960032"
+  #     CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 1
+
+  #     # CONTROL_CENTER_STREAMS_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.truststore.jks
+  #     # CONTROL_CENTER_STREAMS_SSL_TRUSTSTORE_PASSWORD: confluent
+  #     # CONTROL_CENTER_STREAMS_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.keystore.jks
+  #     # CONTROL_CENTER_STREAMS_SSL_KEYSTORE_PASSWORD: confluent
+  #     # CONTROL_CENTER_STREAMS_SSL_KEY_PASSWORD: confluent
+
+  #     # HTTP and HTTPS to Control Center UI 
+  #     CONTROL_CENTER_REST_LISTENERS: http://0.0.0.0:9021
+  #     # CONTROL_CENTER_REST_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.truststore.jks
+  #     # CONTROL_CENTER_REST_SSL_TRUSTSTORE_PASSWORD: confluent
+  #     # CONTROL_CENTER_REST_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.keystore.jks
+  #     # CONTROL_CENTER_REST_SSL_KEYSTORE_PASSWORD: confluent
+  #     # CONTROL_CENTER_REST_SSL_KEY_PASSWORD: confluent
+  #     # CONTROL_CENTER_REST_SSL_CIPHER_SUITES: ${SSL_CIPHER_SUITES}
+  #     PORT: 9021
+
+  #     # Connect
+  #     CONTROL_CENTER_CONNECT_CONNECT1_CLUSTER: http://connect:8083
+
+  #     # ksqlDB
+  #     # Communication between Control Center and ksqlDB Docker containers
+  #     # CONTROL_CENTER_KSQL_WIKIPEDIA_URL: ${CONTROL_CENTER_KSQL_WIKIPEDIA_URL}
+  #     # # Communication from web browser running on localhost to ksqlDB
+  #     # CONTROL_CENTER_KSQL_WIKIPEDIA_ADVERTISED_URL: ${CONTROL_CENTER_KSQL_WIKIPEDIA_ADVERTISED_URL}
+
+  #     # Schema Registry
+  #     CONTROL_CENTER_SCHEMA_REGISTRY_SR1_URL: http://schemaregistry:8085
+  #     # CONTROL_CENTER_SCHEMA_REGISTRY_SR1_SCHEMA_REGISTRY_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.client.truststore.jks
+  #     # CONTROL_CENTER_SCHEMA_REGISTRY_SR1_SCHEMA_REGISTRY_SSL_TRUSTSTORE_PASSWORD: confluent
+  #     # CONTROL_CENTER_SCHEMA_REGISTRY_SR1_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.truststore.jks
+  #     # CONTROL_CENTER_SCHEMA_REGISTRY_SR1_SSL_TRUSTSTORE_PASSWORD: confluent
+
+  #     # RBAC
+  #     CONTROL_CENTER_REST_AUTHENTICATION_METHOD: BEARER
+  #     PUBLIC_KEY_PATH: /tmp/conf/public.pem
+      
+  #     # Used by Control Center to connect to MDS to verify tokens and authenticate clients
+  #     CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://broker:8091
+  #     # CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://host.docker.internal:5555
+  #     CONFLUENT_METADATA_BASIC_AUTH_USER_INFO: controlcenterAdmin:controlcenterAdmin
+
+  #     # CONFLUENT_METADATA_HTTP_AUTH_CREDENTIALS_PROVIDER: OAUTHBEARER
+  #     # CONFLUENT_METADATA_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+  #     # CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_ID: sr_client_app
+  #     # CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: sr_client_app_secret
+
+
+  #     # Used by Control Center to connect to the Admin API for Self Balancing Clusters
+  #     CONTROL_CENTER_STREAMS_CPREST_URL: "http://broker:9095"
+
