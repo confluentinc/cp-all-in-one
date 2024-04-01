@@ -18,9 +18,11 @@ stripped_auth_token=${auth_token//\"/}
 
 echo $stripped_auth_token
 
-docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/SecurityAdmin -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry-demo", "connect-cluster":"connect-cluster"}}'
+docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/SecurityAdmin -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}'
 
 docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"schema-registry-demo", "patternType":"LITERAL"}]}'
+
+docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"_confluent-command", "patternType":"LITERAL"}]}'
 
 docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"_schemas", "patternType":"LITERAL"}]}'
 
@@ -32,4 +34,8 @@ docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_a
 
 docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"connect-offsets", "patternType":"LITERAL"}]}'
 
-docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"connect-status", "patternType":"LITERAL"}]}'
+docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"connect-statuses", "patternType":"LITERAL"}]}'
+
+docker exec broker curl http://broker:8091 -H "Authorization: Bearer $stripped_auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/SecurityAdmin -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q","connect-cluster":"connect-cluster"}}'
+
+docker-compose up --no-recreate -d schema-registry connect

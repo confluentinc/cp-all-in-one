@@ -23,6 +23,10 @@ This will:
 2. Run Confluent Server with Role-based access control (RBAC).
 3. Create a new listener `EXTERNAL` for SASL/OAuthBearer in Confluent Server.
 4. Configure Confluent Server to connect to local Keycloak identity provider.
+5. Configure Schema registry and Connect to work on OAuth.
+
+**_NOTE:_**
+Add keycloak, broker, schema-registry pointing to localhost to local dns resolver.
 
 ## RBAC using OAuth
 
@@ -35,7 +39,7 @@ This will:
        -H "Authorization: Basic c3VwZXJ1c2VyX2NsaWVudF9hcHA6c3VwZXJ1c2VyX2NsaWVudF9hcHBfc2VjcmV0" \
        -H "Content-Type: application/x-www-form-urlencoded" \
        -d "grant_type=client_credentials" \
-       http://localhost:8080/realms/cp/protocol/openid-connect/token
+       http://keycloak:8080/realms/cp/protocol/openid-connect/token
     ```
 
 3. Grant access to other client apps or users by assigning roles to them.
@@ -91,3 +95,62 @@ This will:
      --topic test \
      --consumer.config client.properties
    ```
+
+## Schema Registry RBAC using OAuth
+
+All of the endpoints are accessible using only OAuth token.
+
+List available schemas on the cluster:
+
+```curl -H "Authorization: Bearer <ACCESS_TOKEN>" http://localhost:8081/schemas/types```
+
+### Produce and Consume using schema registry
+
+1. Grant access to schema registry user to the resources needed for producing and consuming from kafka.
+  
+   For example, granting access to client app `client_app1` over subject `test_topic` , topic `test_topic` of Kafka cluster `vHCgQyIrRHG8Jv27qI2h3Q` on schema registry `schema-registry`, replace `<access-token>` with token obtained above:
+    
+    ```shell
+    curl -v \
+      -H "Authorization: Bearer <access-token>" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -X POST 'http://localhost:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings' \
+      -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}, "resourcePatterns":[{"resourceType":"Subject", "name":"test_topic", "patternType":"PREFIXED"}]}'
+    ```
+
+    ```shell
+    curl -v \
+      -H "Authorization: Bearer <access-token>" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -X POST 'http://localhost:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings' \
+      -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"test", "patternType":"LITERAL"}]}'
+    ```
+
+   Also assign access to a consumer group.
+   ```shell
+    curl -v \
+      -H "Authorization: Bearer <access-token>" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json" \
+      -X POST 'http://localhost:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings' \
+      -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"console-consumer-group", "patternType":"LITERAL"}]}'
+
+2. Use kafka-avro-console-producer to produce to a kafka topic using schema validation:
+
+    ```shell 
+    kafka-avro-console-producer --bootstrap-server localhost:9095 --property bearer.auth.credentials.source=OAUTHBEARER --property bearer.auth.issuer.endpoint.url=http://keycloak:8080/realms/cp/protocol/openid-connect/token --property bearer.auth.client.id=client_app1 --property bearer.auth.client.secret=client_app1_secret  --producer.config /Users/ujjwal/repos/cp-all-in-one/cp-all-in-one-security/oauth/client.properties --topic test_topic2 --property value.schema='{"type":"record","name":"Transaction","fields":[{"name":"id","type":"string"},{"name": "amount", "type": "double"}]}'
+    ```
+
+    Where we are:-
+    - Passing schema registry client OAuth configs using bearer prefix.
+    - Passing kafka client related configs using producer.config.
+
+
+3. Use kafka-avro-console-consumer to consume from the topic:
+
+    ```shell
+    kafka-avro-console-consumer --bootstrap-server localhost:9095 --property bearer.auth.credentials.source=OAUTHBEARER --property bearer.auth.issuer.endpoint.url=http://keycloak:8080/realms/cp/protocol/openid-connect/token --property bearer.auth.client.id=client_app1 --property bearer.auth.client.secret=client_app1_secret   --topic test_topic2 --from-beginning --property print.key=true --consumer.config /Users/ujjwal/repos/cp-all-in-one/cp-all-in-one-security/oauth/client.properties
+    ```
+
