@@ -11,10 +11,10 @@ This creates a minimal CP setup (consisting only of the broker and MDS) operatin
 
 ## Getting Started
 
-To run the Docker Compose setup, execute the following command:
+To initialise the environment use the provided start script, execute the following command:
 
 ```bash
-docker compose up -d
+./start.sh
 ```
 
 This will:
@@ -108,7 +108,7 @@ List available schemas on the cluster:
 
 1. Grant access to schema registry user to the resources needed for producing and consuming from kafka.
   
-   For example, granting access to client app `client_app1` over subject `test_topic` , topic `test_topic` of Kafka cluster `vHCgQyIrRHG8Jv27qI2h3Q` on schema registry `schema-registry`, replace `<access-token>` with token obtained above:
+   For example, granting access to client app `client_app1` over subject `test_topic` , topic `test_topic` of Kafka cluster `vHCgQyIrRHG8Jv27qI2h3Q` on schema registry `schema-registry`, replace `<access-token>` with token obtained from keycloak:
     
     ```shell
     curl -v \
@@ -125,7 +125,7 @@ List available schemas on the cluster:
       -H "Content-Type: application/json" \
       -H "Accept: application/json" \
       -X POST 'http://localhost:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings' \
-      -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"test", "patternType":"LITERAL"}]}'
+      -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"test_topic", "patternType":"PREFIXED"}]}'
     ```
 
    Also assign access to a consumer group.
@@ -140,7 +140,7 @@ List available schemas on the cluster:
 2. Use kafka-avro-console-producer to produce to a kafka topic using schema validation:
 
     ```shell 
-    kafka-avro-console-producer --bootstrap-server localhost:9095 --property bearer.auth.credentials.source=OAUTHBEARER --property bearer.auth.issuer.endpoint.url=http://keycloak:8080/realms/cp/protocol/openid-connect/token --property bearer.auth.client.id=client_app1 --property bearer.auth.client.secret=client_app1_secret  --producer.config /Users/ujjwal/repos/cp-all-in-one/cp-all-in-one-security/oauth/client.properties --topic test_topic2 --property value.schema='{"type":"record","name":"Transaction","fields":[{"name":"id","type":"string"},{"name": "amount", "type": "double"}]}'
+    kafka-avro-console-producer --bootstrap-server localhost:9095 --property bearer.auth.credentials.source=OAUTHBEARER --property bearer.auth.issuer.endpoint.url=http://keycloak:8080/realms/cp/protocol/openid-connect/token --property bearer.auth.client.id=client_app1 --property bearer.auth.client.secret=client_app1_secret  --producer.config <client properties> --topic test_topic --property value.schema='{"type":"record","name":"Transaction","fields":[{"name":"id","type":"string"},{"name": "amount", "type": "double"}]}'
     ```
 
     Where we are:-
@@ -151,6 +151,6 @@ List available schemas on the cluster:
 3. Use kafka-avro-console-consumer to consume from the topic:
 
     ```shell
-    kafka-avro-console-consumer --bootstrap-server localhost:9095 --property bearer.auth.credentials.source=OAUTHBEARER --property bearer.auth.issuer.endpoint.url=http://keycloak:8080/realms/cp/protocol/openid-connect/token --property bearer.auth.client.id=client_app1 --property bearer.auth.client.secret=client_app1_secret   --topic test_topic2 --from-beginning --property print.key=true --consumer.config /Users/ujjwal/repos/cp-all-in-one/cp-all-in-one-security/oauth/client.properties
+    kafka-avro-console-consumer --bootstrap-server localhost:9095 --property bearer.auth.credentials.source=OAUTHBEARER --property bearer.auth.issuer.endpoint.url=http://keycloak:8080/realms/cp/protocol/openid-connect/token --property bearer.auth.client.id=client_app1 --property bearer.auth.client.secret=client_app1_secret   --topic test_topic --from-beginning --property print.key=true --consumer.config <client properties>
     ```
 
