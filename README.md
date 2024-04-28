@@ -1,7 +1,7 @@
 # Confluent Platform All-In-One
-
+cp-all-in-one
 This repository contains a set of Docker Compose files for running Confluent Platform. It is organized as follows:
-
+cp-all-in-one-community
 1. `cp-all-in-one`: Confluent Enterprise License version of Confluent Platform, including Confluent Server (and ZooKeeper),
 Schema Registry, a Kafka Connect worker with the Datagen Source connector plugin installed, Confluent Control Center,
 REST Proxy, and ksqlDB.
