@@ -2,7 +2,7 @@
 version: '2'
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0.5
+    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/quay.io/keycloak/keycloak:23.0.5
     hostname: keycloak
     container_name: keycloak
     command: ["start-dev", "--health-enabled=true", "--import-realm"]
@@ -24,7 +24,7 @@ services:
 
 
   broker:
-    image: confluentinc/cp-server:master-latest
+    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-server:master-latest
     hostname: broker
     container_name: broker
     depends_on:
@@ -134,7 +134,7 @@ services:
     command: "bash -c 'if [ ! -f /tmp/conf/keypair.pem ]; then echo \"ERROR: Did you forget the create-certificates.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /etc/confluent/docker/run ; fi'"
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:master-latest
+    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-schema-registry:master-latest
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -184,7 +184,7 @@ services:
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: sr_client_app_secret
 
   connect:
-    image: confluentinc/cp-server-connect:master-latest
+    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-server-connect:master-latest
     container_name: connect
     restart: always
     # healthcheck:
@@ -336,7 +336,7 @@ services:
                   -XX:MaxInlineLevel=15 -Djava.awt.headless=true
     
   # control-center:
-  #   image: confluentinc/cp-enterprise-control-center:master-latest
+  #   image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-enterprise-control-center:master-latest
   #   hostname: control-center
   #   container_name: control-center
   #   # healthcheck:
