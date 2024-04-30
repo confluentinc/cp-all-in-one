@@ -2,7 +2,7 @@
 version: '2'
 services:
   keycloak:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/quay.io/keycloak/keycloak:23.0.5
+    image: quay.io/keycloak/keycloak:23.0.5
     hostname: keycloak
     container_name: keycloak
     command: ["start-dev", "--health-enabled=true", "--import-realm"]
@@ -22,9 +22,8 @@ services:
     volumes:
       - ./keycloak-realm-export.json:/opt/keycloak/data/import/realm-export.json
 
-
   broker:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-server:master-latest
+    image: ${DOCKER_REGISTRY}confluentinc/cp-server:master-latest
     hostname: broker
     container_name: broker
     depends_on:
@@ -119,7 +118,7 @@ services:
       KAFKA_KAFKA_REST_OAUTHBEARER_SUB_CLAIM_NAME: sub
       KAFKA_KAFKA_REST_OAUTHBEARER_GROUPS_CLAIM_NAME: groups
       KAFKA_KAFKA_REST_PUBLIC_KEY_PATH: /tmp/conf/public.pem
-      
+
       # EmbeddedKafkaRest: MDS Client configuration
       KAFKA_KAFKA_REST_CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://broker:8091
       KAFKA_KAFKA_REST_CONFLUENT_METADATA_HTTP_AUTH_CREDENTIALS_PROVIDER: OAUTHBEARER
@@ -131,10 +130,11 @@ services:
 
     volumes:
       - ./keypair:/tmp/conf
+      - ./confluent:/usr/bin/confluent
     command: "bash -c 'if [ ! -f /tmp/conf/keypair.pem ]; then echo \"ERROR: Did you forget the create-certificates.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /etc/confluent/docker/run ; fi'"
 
   schema-registry:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-schema-registry:master-latest
+    image: ${DOCKER_REGISTRY}confluentinc/cp-schema-registry:master-latest
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -144,6 +144,7 @@ services:
       - "8081:8081"
     volumes:
       - ./keypair:/tmp/conf
+      - ./confluent:/usr/bin/confluent
     environment:
 
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
@@ -184,7 +185,7 @@ services:
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: sr_client_app_secret
 
   connect:
-    image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-server-connect:master-latest
+    image: ${DOCKER_REGISTRY}confluentinc/cp-server-connect:master-latest
     container_name: connect
     restart: always
     # healthcheck:
@@ -196,6 +197,7 @@ services:
         condition: service_healthy
     volumes:
       - ./keypair:/tmp/conf
+      - ./confluent:/usr/bin/confluent
     ports:
       - 8083:8083
     environment:
@@ -266,7 +268,7 @@ services:
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: 'OAUTHBEARER'
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
-      
+
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
               clientId="connect_client_app" \
@@ -334,9 +336,9 @@ services:
                   -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20
                   -XX:MaxGCPauseMillis=10000 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ExplicitGCInvokesConcurrent
                   -XX:MaxInlineLevel=15 -Djava.awt.headless=true
-    
+
   # control-center:
-  #   image: 368821881613.dkr.ecr.us-west-2.amazonaws.com/confluentinc/cp-enterprise-control-center:master-latest
+  #   image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:master-latest
   #   hostname: control-center
   #   container_name: control-center
   #   # healthcheck:

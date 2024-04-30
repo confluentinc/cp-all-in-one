@@ -5,6 +5,14 @@
 # source ${DIR}/env.sh
 
 #-------------------------------------------------------------------------------
+# Script to get Confluent CLI
+# curl -k CLI_URL -o confluent
+# Update the confluent cli permissions
+CONFLUENT_CLI='./confluent'
+if [ -f $CONFLUENT_CLI ]; then
+  echo "Updating permission of ${CONFLUENT_CLI} to 744"
+  chmod 744 $CONFLUENT_CLI
+fi
 
 /bin/bash ./create-certificates.sh
 

@@ -1,4 +1,5 @@
 **/.idea/
+*.iml
 **/kafka-streams-examples
 **/delta_configs/
 **/target/
