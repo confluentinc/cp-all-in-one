@@ -62,8 +62,6 @@ services:
       CONFLUENT_METRICS_ENABLE: 'true'
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_SUPER_USERS: User:admin;User:ANONYMOUS;User:testuser1;User:superuser_client_app
-      #User:e5172ec0-25d6-4684-8614-f2adb23c529d
-      #KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=INFO"
       KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
       KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=DEBUG,io.confluent.rest-utils=DEBUG,io.confluent.rbacapi=DEBUG,io.confluent.tokenapi=DEBUG,io.confluent.security.auth=DEBUG,io.confluent.security.store=DEBUG,io.confluent.common.security.jetty=DEBUG"
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
@@ -128,6 +126,14 @@ services:
       KAFKA_KAFKA_REST_CONFLUENT_METADATA_SERVER_URLS_MAX_AGE_MS: 60000
       KAFKA_KAFKA_REST_CLIENT_CONFLUENT_METADATA_SERVER_URLS_MAX_AGE_MS: 60000
 
+      KAFKA_CONFLUENT_OIDC_IDP_ISSUER: http://keycloak:8080/realms/cp
+      KAFKA_CONFLUENT_OIDC_IDP_JWKS.ENDPOINT.URI: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
+      KAFKA_CONFLUENT_OIDC_IDP_AUTHORIZE.BASE.ENDPOINT.URI: http://keycloak:8080/realms/cp/protocol/openid-connect/auth
+      KAFKA_CONFLUENT_OIDC_IDP_TOKEN.BASE.ENDPOINT.URI: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      KAFKA_CONFLUENT_OIDC_IDP_CLIENT.ID: ssologin
+      KAFKA_CONFLUENT_OIDC_IDP_CLIENT.SECRET: ssologin
+      KAFKA_CONFLUENT_METADATA_SERVER_SSO_MODE: oidc
+
     volumes:
       - ./keypair:/tmp/conf
       - ./confluent:/usr/bin/confluent
@@ -185,7 +191,7 @@ services:
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: sr_client_app_secret
 
   connect:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-server-connect:master-latest
+    image: localbuild/connect:master-latest
     container_name: connect
     restart: always
     # healthcheck:
@@ -336,109 +342,85 @@ services:
                   -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20
                   -XX:MaxGCPauseMillis=10000 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ExplicitGCInvokesConcurrent
                   -XX:MaxInlineLevel=15 -Djava.awt.headless=true
-
-  # control-center:
-  #   image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:master-latest
-  #   hostname: control-center
-  #   container_name: control-center
-  #   # healthcheck:
-  #   #   start_period: 10s
-  #   #   interval: 10s
-  #   #   retries: 20
-  #   #   test: curl --fail --silent http://control-center:9021 --output /dev/null || exit 1
-  #   depends_on:
-  #     broker:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./scripts/security/keypair:/tmp/conf
-  #     - ./scripts/security:/etc/kafka/secrets
-  #   # command: "rm -rf /usr/share/java/confluent-control-center/protobuf-java-util-3.24.4.jar && /etc/confluent/docker/launch;'"
-  #   ports:
-  #     - 9021:9021
-  #     - 9022:9022
-  #   environment:
-  #     CUB_CLASSPATH: '/usr/share/java/confluent-control-center/*:/usr/share/java/rest-utils/*:/usr/share/java/confluent-common/*:/usr/share/java/confluent-security/kafka-rest/*:/usr/share/java/kafka-rest/:/usr/share/java/cp-base-new/*'
-
-  #     # If using Confluent Health+ for monitoring and alerting, uncomment the line below to run in management mode.
-  #     # CONTROL_CENTER_MODE_ENABLE: "management"
-  #     # You can now remove all Control Center "STREAMS", "MONITORING", and "METRICS" configurations
+    
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:master-latest
+    hostname: control-center
+    container_name: control-center
+    healthcheck:
+      start_period: 10s
+      interval: 10s
+      retries: 20
+      test: curl --fail --silent http://control-center:9021 --output /dev/null || exit 1
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./keypair:/tmp/conf
+    # command: "rm -rf /usr/share/java/confluent-control-center/protobuf-java-util-3.24.4.jar && /etc/confluent/docker/launch;'"
+    ports:
+      - 9021:9021
+      - 9022:9022
+    environment:
+      CUB_CLASSPATH: '/usr/share/java/confluent-control-center/*:/usr/share/java/rest-utils/*:/usr/share/java/confluent-common/*:/usr/share/java/confluent-security/kafka-rest/*:/usr/share/java/kafka-rest/:/usr/share/java/cp-base-new/*'
       
-  #     # general settings
-  #     CONTROL_CENTER_BOOTSTRAP_SERVERS: EXTERNAL://broker:9095
-  #     CONTROL_CENTER_REPLICATION_FACTOR: 1
-  #     CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-  #     CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL: DEBUG
-  #     CONTROL_CENTER_LOG4J_LOGLEVEL: DEBUG
-
-
-  #     # Control Center uses Kafka Streams to process metrics
-  #     CONTROL_CENTER_STREAMS_SECURITY_PROTOCOL: SASL_PLAINTEXT
-  #     CONTROL_CENTER_STREAMS_SASL_MECHANISM: OAUTHBEARER
-  #     CONTROL_CENTER_STREAMS_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
-  #     CONTROL_CENTER_STREAMS_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
-  #     CONTROL_CENTER_STREAMS_SASL_JAAS_CONFIG: |
-  #             org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
-  #             clientId="sr_client_app" \
-  #             clientSecret="sr_client_app_secret";
-  #     # CONTROL_CENTER_STREAMS_SSL_CIPHER_SUITES: ${SSL_CIPHER_SUITES}
-
-  #     CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
-  #     CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-  #     CONTROL_CENTER_METRICS_TOPIC_REPLICATION: 1
-  #     CONTROL_CENTER_METRICS_TOPIC_PARTITIONS: 1
-
-  #     # Amount of heap to use for internal caches. Increase for better throughput
-  #     CONTROL_CENTER_STREAMS_CACHE_MAX_BYTES_BUFFERING: 100000000
-  #     CONTROL_CENTER_STREAMS_CONSUMER_REQUEST_TIMEOUT_MS: "960032"
-  #     CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 1
-
-  #     # CONTROL_CENTER_STREAMS_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.truststore.jks
-  #     # CONTROL_CENTER_STREAMS_SSL_TRUSTSTORE_PASSWORD: confluent
-  #     # CONTROL_CENTER_STREAMS_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.keystore.jks
-  #     # CONTROL_CENTER_STREAMS_SSL_KEYSTORE_PASSWORD: confluent
-  #     # CONTROL_CENTER_STREAMS_SSL_KEY_PASSWORD: confluent
-
-  #     # HTTP and HTTPS to Control Center UI 
-  #     CONTROL_CENTER_REST_LISTENERS: http://0.0.0.0:9021
-  #     # CONTROL_CENTER_REST_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.truststore.jks
-  #     # CONTROL_CENTER_REST_SSL_TRUSTSTORE_PASSWORD: confluent
-  #     # CONTROL_CENTER_REST_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.keystore.jks
-  #     # CONTROL_CENTER_REST_SSL_KEYSTORE_PASSWORD: confluent
-  #     # CONTROL_CENTER_REST_SSL_KEY_PASSWORD: confluent
-  #     # CONTROL_CENTER_REST_SSL_CIPHER_SUITES: ${SSL_CIPHER_SUITES}
-  #     PORT: 9021
-
-  #     # Connect
-  #     CONTROL_CENTER_CONNECT_CONNECT1_CLUSTER: http://connect:8083
-
-  #     # ksqlDB
-  #     # Communication between Control Center and ksqlDB Docker containers
-  #     # CONTROL_CENTER_KSQL_WIKIPEDIA_URL: ${CONTROL_CENTER_KSQL_WIKIPEDIA_URL}
-  #     # # Communication from web browser running on localhost to ksqlDB
-  #     # CONTROL_CENTER_KSQL_WIKIPEDIA_ADVERTISED_URL: ${CONTROL_CENTER_KSQL_WIKIPEDIA_ADVERTISED_URL}
-
-  #     # Schema Registry
-  #     CONTROL_CENTER_SCHEMA_REGISTRY_SR1_URL: http://schemaregistry:8085
-  #     # CONTROL_CENTER_SCHEMA_REGISTRY_SR1_SCHEMA_REGISTRY_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.client.truststore.jks
-  #     # CONTROL_CENTER_SCHEMA_REGISTRY_SR1_SCHEMA_REGISTRY_SSL_TRUSTSTORE_PASSWORD: confluent
-  #     # CONTROL_CENTER_SCHEMA_REGISTRY_SR1_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.controlCenterAndKsqlDBServer.truststore.jks
-  #     # CONTROL_CENTER_SCHEMA_REGISTRY_SR1_SSL_TRUSTSTORE_PASSWORD: confluent
-
-  #     # RBAC
-  #     CONTROL_CENTER_REST_AUTHENTICATION_METHOD: BEARER
-  #     PUBLIC_KEY_PATH: /tmp/conf/public.pem
+      # If using Confluent Health+ for monitoring and alerting, uncomment the line below to run in management mode.
+      # CONTROL_CENTER_MODE_ENABLE: "management"
+      # You can now remove all Control Center "STREAMS", "MONITORING", and "METRICS" configurations
       
-  #     # Used by Control Center to connect to MDS to verify tokens and authenticate clients
-  #     CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://broker:8091
-  #     # CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://host.docker.internal:5555
-  #     CONFLUENT_METADATA_BASIC_AUTH_USER_INFO: controlcenterAdmin:controlcenterAdmin
-
-  #     # CONFLUENT_METADATA_HTTP_AUTH_CREDENTIALS_PROVIDER: OAUTHBEARER
-  #     # CONFLUENT_METADATA_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
-  #     # CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_ID: sr_client_app
-  #     # CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: sr_client_app_secret
+      # general settings
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: EXTERNAL://broker:9095
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL: INFO
+      CONTROL_CENTER_LOG4J_LOGLEVEL: INFO
 
 
-  #     # Used by Control Center to connect to the Admin API for Self Balancing Clusters
-  #     CONTROL_CENTER_STREAMS_CPREST_URL: "http://broker:9095"
+      # Control Center uses Kafka Streams to process metrics
+      CONTROL_CENTER_STREAMS_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      CONTROL_CENTER_STREAMS_SASL_MECHANISM: OAUTHBEARER
+      CONTROL_CENTER_STREAMS_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+      CONTROL_CENTER_STREAMS_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      CONTROL_CENTER_STREAMS_SASL_JAAS_CONFIG: |
+              org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+              clientId="sr_client_app" \
+              clientSecret="sr_client_app_secret";
+
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONTROL_CENTER_METRICS_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_METRICS_TOPIC_PARTITIONS: 1
+
+      # Amount of heap to use for internal caches. Increase for better throughput
+      CONTROL_CENTER_STREAMS_CACHE_MAX_BYTES_BUFFERING: 100000000
+      CONTROL_CENTER_STREAMS_CONSUMER_REQUEST_TIMEOUT_MS: "960032"
+      CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 1
+
+      # HTTP and HTTPS to Control Center UI 
+      CONTROL_CENTER_REST_LISTENERS: http://0.0.0.0:9021
+      PORT: 9021
+
+      # Connect
+      CONTROL_CENTER_CONNECT_CONNECT1_CLUSTER: http://connect:8083
+
+      # Schema Registry
+      CONTROL_CENTER_SCHEMA_REGISTRY_SR1_URL: http://schemaregistry:8085
+
+      # RBAC
+      CONTROL_CENTER_REST_AUTHENTICATION_METHOD: BEARER
+      PUBLIC_KEY_PATH: /tmp/conf/public.pem
+      
+      # Used by Control Center to connect to MDS to verify tokens and authenticate clients
+      CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://broker:8091
+      CONFLUENT_METADATA_HTTP_AUTH_CREDENTIALS_PROVIDER: OAUTHBEARER
+      CONFLUENT_METADATA_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
+      CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_ID: sr_client_app
+      CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: sr_client_app_secret
+      
+      CONTROL_CENTER_AUTH_SSO_MODE: oidc
+
+      CONFLUENT_CONTROLCENTER_AUTH_SSO_MODE: oidc
+
+      CONFLUENT_CONTROLCENTER_LICENCE_MANAGER_ENABLE: false
+      CONTROL_CENTER_CONFLUENT_CONTROLCENTER_LICENCE_MANAGER_ENABLE: false
 
