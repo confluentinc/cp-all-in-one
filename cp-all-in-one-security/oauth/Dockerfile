@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ARG REPOSITORY
+ARG REPOSITORY
 # ARG CP_VERSION
 
 # Stage 1 -- install connectors
-FROM ${DOCKER_REGISTRY}confluentinc/cp-server-connect:master-latest AS install-connectors
+FROM ${REPOSITORY}confluentinc/cp-server-connect:master-latest AS install-connectors
 
 ENV CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
 
@@ -28,6 +28,6 @@ RUN confluent-hub install --no-prompt confluentinc/kafka-connect-datagen:0.6.5
 RUN confluent-hub install --no-prompt confluentinc/kafka-connect-avro-converter:7.6.0
 
 # Stage 2 -- copy jars
-FROM ${DOCKER_REGISTRY}confluentinc/cp-server-connect:master-latest
+FROM ${REPOSITORY}confluentinc/cp-server-connect:master-latest
 
 COPY --from=install-connectors /usr/share/confluent-hub-components/ /usr/share/confluent-hub-components/
