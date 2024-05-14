@@ -344,7 +344,7 @@ services:
                   -XX:MaxInlineLevel=15 -Djava.awt.headless=true
     
   control-center:
-    image: confluentinc/cp-enterprise-control-center:master-latest
+    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:master-latest
     hostname: control-center
     container_name: control-center
     healthcheck:
