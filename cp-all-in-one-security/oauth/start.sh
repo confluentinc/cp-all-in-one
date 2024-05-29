@@ -28,8 +28,4 @@ assign_role_bindings
 
 docker-compose up --no-recreate -d schema-registry
 
-#build_connect_image
-build_connect_image
-
 docker-compose up --no-recreate -d connect control-center
-

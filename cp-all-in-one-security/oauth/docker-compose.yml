@@ -23,7 +23,7 @@ services:
       - ./keycloak-realm-export.json:/opt/keycloak/data/import/realm-export.json
 
   broker:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-server:master-latest
+    image: ${DOCKER_REGISTRY}confluentinc/cp-server:7.7.x-latest-ubi8
     hostname: broker
     container_name: broker
     depends_on:
@@ -108,7 +108,6 @@ services:
 
       # EmbeddedKafkaRest: HTTP Auth Configuration
       KAFKA_KAFKA_REST_KAFKA_REST_RESOURCE_EXTENSION_CLASS: io.confluent.kafkarest.security.KafkaRestSecurityResourceExtension
-      KAFKA_KAFKA_REST_AUTHENTICATION_ROLES: '**'
       KAFKA_KAFKA_REST_REST_SERVLET_INITIALIZOR_CLASSES: io.confluent.common.security.jetty.initializer.AuthenticationHandler
       KAFKA_KAFKA_REST_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
       KAFKA_KAFKA_REST_OAUTHBEARER_EXPECTED_ISSUER: http://keycloak:8080/realms/cp
@@ -140,7 +139,7 @@ services:
     command: "bash -c 'if [ ! -f /tmp/conf/keypair.pem ]; then echo \"ERROR: Did you forget the create-certificates.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /etc/confluent/docker/run ; fi'"
 
   schema-registry:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-schema-registry:master-latest
+    image: ${DOCKER_REGISTRY}confluentinc/cp-schema-registry:7.7.x-latest-ubi8
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -169,7 +168,6 @@ services:
 
 
       # Enable OAuth in SR server
-      SCHEMA_REGISTRY_AUTHENTICATION_ROLES: '**'
       SCHEMA_REGISTRY_REST_SERVLET_INITIALIZOR_CLASSES: io.confluent.common.security.jetty.initializer.AuthenticationHandler
       SCHEMA_REGISTRY_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
       SCHEMA_REGISTRY_OAUTHBEARER_EXPECTED_ISSUER: http://keycloak:8080/realms/cp
@@ -191,7 +189,7 @@ services:
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: sr_client_app_secret
 
   connect:
-    image: localbuild/connect:master-latest
+    image: ${DOCKER_REGISTRY}confluentinc/cp-server-connect:7.7.x-latest-ubi8
     container_name: connect
     restart: always
     # healthcheck:
@@ -302,7 +300,6 @@ services:
       CONNECT_REST_SERVLET_INITIALIZOR_CLASSES: 'io.confluent.common.security.jetty.initializer.AuthenticationHandler'
       CONNECT_PUBLIC_KEY_PATH: /tmp/conf/public.pem
 
-      CONNECT_AUTHENTICATION_ROLES: '**'
       CONNECT_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
       CONNECT_OAUTHBEARER_EXPECTED_ISSUER: http://keycloak:8080/realms/cp
       CONNECT_OAUTHBEARER_EXPECTED_AUDIENCE: account
@@ -342,9 +339,9 @@ services:
                   -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=20
                   -XX:MaxGCPauseMillis=10000 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ExplicitGCInvokesConcurrent
                   -XX:MaxInlineLevel=15 -Djava.awt.headless=true
-    
+
   control-center:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:master-latest
+    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:7.7.x-latest-ubi8
     hostname: control-center
     container_name: control-center
     healthcheck:
@@ -421,6 +418,6 @@ services:
 
       CONFLUENT_CONTROLCENTER_AUTH_SSO_MODE: oidc
 
-      CONFLUENT_CONTROLCENTER_LICENCE_MANAGER_ENABLE: false
-      CONTROL_CENTER_CONFLUENT_CONTROLCENTER_LICENCE_MANAGER_ENABLE: false
+      CONFLUENT_CONTROLCENTER_LICENCE_MANAGER_ENABLE: "false"
+      CONTROL_CENTER_CONFLUENT_CONTROLCENTER_LICENCE_MANAGER_ENABLE: "false"
 
