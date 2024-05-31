@@ -16,16 +16,22 @@ fi
 
 /bin/bash ./create-certificates.sh
 
+# Start Keycloak and Broker instances
 docker-compose up --no-recreate -d keycloak broker
-
+# Wait for sometime to get the broker properly booted
 sleep 30
 
-auth_token=$(docker exec broker curl -s -d "client_id=superuser_client_app" -d "client_secret=superuser_client_app_secret" -d "grant_type=client_credentials" http://keycloak:8080/realms/cp/protocol/openid-connect/token | jq -r .access_token)
-
-echo $auth_token
-
+# Assign all required role bindings.
 assign_role_bindings
 
-docker-compose up --no-recreate -d schema-registry
+# Do we need this??
+create_topic test
 
-docker-compose up --no-recreate -d connect control-center
+# Get other CP component services
+docker-compose up --no-recreate -d schema-registry connect control-center
+
+# Install some connectors for demo use case
+install_connectors
+
+# Get different user tokens and set it in current session
+get_user_tokens

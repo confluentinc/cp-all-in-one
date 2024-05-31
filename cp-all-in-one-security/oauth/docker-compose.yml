@@ -20,7 +20,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./keycloak-realm-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./configs/keycloak-realm-export.json:/opt/keycloak/data/import/realm-export.json
+
 
   broker:
     image: ${DOCKER_REGISTRY}confluentinc/cp-server:7.7.x-latest-ubi8
@@ -41,20 +42,16 @@ services:
       - "8091:8091"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
       KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092,INTERNAL://localhost:9093,EXTERNAL://broker:9095
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092,INTERNAL://localhost:9093,EXTERNAL://broker:9095
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
+      KAFKA_SASL_MECHANISM_CONTROLLER_PROTOCOL: PLAIN
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
       CLUSTER_ID: 'vHCgQyIrRHG8Jv27qI2h3Q'
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_JMX_PORT: 9101
       KAFKA_JMX_HOSTNAME: localhost
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
@@ -63,11 +60,20 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_SUPER_USERS: User:admin;User:ANONYMOUS;User:testuser1;User:superuser_client_app
       KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
-      KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=DEBUG,io.confluent.rest-utils=DEBUG,io.confluent.rbacapi=DEBUG,io.confluent.tokenapi=DEBUG,io.confluent.security.auth=DEBUG,io.confluent.security.store=DEBUG,io.confluent.common.security.jetty=DEBUG"
+      KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=DEBUG,io.confluent.rest-utils=INFO,io.confluent.rbacapi=INFO,io.confluent.tokenapi=INFO,io.confluent.security.auth=INFO,io.confluent.security.store=INFO,io.confluent.common.security.jetty=INFO"
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN, OAUTHBEARER
+
       KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: |
+        org.apache.kafka.common.security.plain.PlainLoginModule required \
+        username="admin" \
+        password="admin-secret" \
+        user_admin="admin-secret" \
+        user_mds="mds-secret";
+
+      KAFKA_LISTENER_NAME_CONTROLLER_SASL_ENABLED_MECHANISMS: PLAIN
+      KAFKA_LISTENER_NAME_CONTROLLER_PLAIN_SASL_JAAS_CONFIG: |
         org.apache.kafka.common.security.plain.PlainLoginModule required \
         username="admin" \
         password="admin-secret" \
@@ -78,11 +84,13 @@ services:
       KAFKA_LISTENER_NAME_EXTERNAL_SASL_ENABLED_MECHANISMS: OAUTHBEARER
       KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
       KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_EXPECTED_AUDIENCE: account
+      KAFKA_LISTENER_NAME_EXTERNAL_SASL_OAUTHBEARER_SUB_CLAIM_NAME: clientId
       KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_JAAS_CONFIG: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required unsecuredLoginStringClaim_sub="thePrincipalName" publicKeyPath="/tmp/conf/public.pem";
       KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.confluent.kafka.server.plugins.auth.token.CompositeBearerValidatorCallbackHandler
       KAFKA_LISTENER_NAME_EXTERNAL_PRINCIPAL_BUILDER_CLASS: io.confluent.kafka.security.authenticator.OAuthKafkaPrincipalBuilder
       KAFKA_LISTENER_NAME_CONTROLLER_PRINCIPAL_BUILDER_CLASS: io.confluent.kafka.security.authenticator.OAuthKafkaPrincipalBuilder
       KAFKA_CONFLUENT_OAUTH_GROUPS_CLAIM_NAME: groups
+
 
       # Configure Confluent Server Authorizer
       KAFKA_AUTHORIZER_CLASS_NAME: io.confluent.kafka.security.authorizer.ConfluentServerAuthorizer
@@ -92,14 +100,14 @@ services:
       KAFKA_CONFLUENT_METADATA_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_CONFLUENT_METADATA_SERVER_AUTHENTICATION_METHOD: BEARER
       KAFKA_CONFLUENT_METADATA_SERVER_LISTENERS: http://0.0.0.0:8091
-      KAFKA_CONFLUENT_METADATA_SERVER_ADVERTISED_LISTENERS: http://localhost:8091
+      KAFKA_CONFLUENT_METADATA_SERVER_ADVERTISED_LISTENERS: http://broker:8091
       KAFKA_CONFLUENT_METADATA_SERVER_TOKEN_KEY_PATH: /tmp/conf/keypair.pem
       KAFKA_CONFLUENT_METADATA_SERVER_OPENAPI_ENABLE: 'true'
       KAFKA_CONFLUENT_METADATA_SERVER_USER_STORE: OAUTH
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_ISSUER: http://keycloak:8080/realms/cp
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_AUDIENCE: account
-      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_SUB_CLAIM_NAME: sub
+      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_SUB_CLAIM_NAME: clientId
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_GROUPS_CLAIM_NAME: groups
 
        # EmbeddedKafkaRest: Kafka Client Configuration
@@ -112,7 +120,7 @@ services:
       KAFKA_KAFKA_REST_OAUTHBEARER_JWKS_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/certs
       KAFKA_KAFKA_REST_OAUTHBEARER_EXPECTED_ISSUER: http://keycloak:8080/realms/cp
       KAFKA_KAFKA_REST_OAUTHBEARER_EXPECTED_AUDIENCE: account
-      KAFKA_KAFKA_REST_OAUTHBEARER_SUB_CLAIM_NAME: sub
+      KAFKA_KAFKA_REST_OAUTHBEARER_SUB_CLAIM_NAME: clientId
       KAFKA_KAFKA_REST_OAUTHBEARER_GROUPS_CLAIM_NAME: groups
       KAFKA_KAFKA_REST_PUBLIC_KEY_PATH: /tmp/conf/public.pem
 
@@ -133,9 +141,24 @@ services:
       KAFKA_CONFLUENT_OIDC_IDP_CLIENT.SECRET: ssologin
       KAFKA_CONFLUENT_METADATA_SERVER_SSO_MODE: oidc
 
+      # Other configurations
+      KAFKA_CONFLUENT_CLUSTER_LINK_METADATA_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_ENABLED: 'false'
+      KAFKA_CONFLUENT_TELEMETRY_ENABLED: 'false'
+      KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLED: 'false'
+      KAFKA_LOG_RETENTION_HOURS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLED: 'true'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
     volumes:
       - ./keypair:/tmp/conf
-      - ./confluent:/usr/bin/confluent
+      - ./configs:/etc/confluent/configs
+      - ./bin/confluent:/usr/bin/confluent
+
     command: "bash -c 'if [ ! -f /tmp/conf/keypair.pem ]; then echo \"ERROR: Did you forget the create-certificates.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /etc/confluent/docker/run ; fi'"
 
   schema-registry:
@@ -149,7 +172,8 @@ services:
       - "8081:8081"
     volumes:
       - ./keypair:/tmp/conf
-      - ./confluent:/usr/bin/confluent
+      - ./bin/confluent:/usr/bin/confluent
+      - ./configs:/etc/confluent/configs
     environment:
 
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
@@ -201,7 +225,8 @@ services:
         condition: service_healthy
     volumes:
       - ./keypair:/tmp/conf
-      - ./confluent:/usr/bin/confluent
+      - ./bin/confluent:/usr/bin/confluent
+      - ./configs:/etc/confluent/configs
     ports:
       - 8083:8083
     environment:
@@ -354,6 +379,7 @@ services:
         condition: service_healthy
     volumes:
       - ./keypair:/tmp/conf
+      - ./configs:/etc/confluent/configs
     # command: "rm -rf /usr/share/java/confluent-control-center/protobuf-java-util-3.24.4.jar && /etc/confluent/docker/launch;'"
     ports:
       - 9021:9021
@@ -409,10 +435,11 @@ services:
       
       # Used by Control Center to connect to MDS to verify tokens and authenticate clients
       CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://broker:8091
-      CONFLUENT_METADATA_HTTP_AUTH_CREDENTIALS_PROVIDER: OAUTHBEARER
+#      CONFLUENT_METADATA_HTTP_AUTH_CREDENTIALS_PROVIDER: OAUTHBEARER
       CONFLUENT_METADATA_OAUTHBEARER_TOKEN_ENDPOINT_URL: http://keycloak:8080/realms/cp/protocol/openid-connect/token
       CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_ID: sr_client_app
       CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: sr_client_app_secret
+#      CONFLUENT_METADATA_BASIC_AUTH_USER_INFO: USERNAME:PASSWORD
       
       CONTROL_CENTER_AUTH_SSO_MODE: oidc
 
