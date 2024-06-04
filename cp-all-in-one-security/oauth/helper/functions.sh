@@ -1,53 +1,83 @@
 #!/bin/bash
+source ./env.sh
+
+update_cli_permissions(){
+
+  # Script to get Confluent CLI `curl -k CLI_URL -o confluent`
+  # Update the confluent cli permissions
+  CONFLUENT_CLI='./bin/confluent'
+  if [ -f $CONFLUENT_CLI ]; then
+    echo "Updating permission of ${CONFLUENT_CLI} to 744"
+    chmod 744 $CONFLUENT_CLI
+  fi
+
+}
+
+create_certificates(){
+
+  # Generate keys and certificates used by MDS
+  echo -e "Generate keys and certificates used for MDS"
+  rm -rf ./keypair/keypair.pem ./keypair/public.pem
+  mkdir -p ./keypair
+
+  openssl genrsa -out ./keypair/keypair.pem 2048; openssl rsa -in ./keypair/keypair.pem -outform PEM -pubout -out ./keypair/public.pem
+}
+
+create_client_files(){
+
+  echo "Creating client files"
+  cat templates/superuser.template | envsubst > configs/superuser.properties
+  cat templates/client.template | envsubst > configs/client.properties
+
+}
 
 # Assign application role bindings
 assign_role_bindings()
 {
-auth_token=$(curl -s -d "client_id=superuser_client_app" -d "client_secret=superuser_client_app_secret" -d "grant_type=client_credentials" http://keycloak:8080/realms/cp/protocol/openid-connect/token | jq -r .access_token)
+auth_token=$(curl -s -d "client_id=$SUPERUSER_CLIENT_ID" -d "client_secret=$SUPERUSER_CLIENT_SECRET" -d "grant_type=client_credentials" $IDP_TOKEN_ENDPOINT | jq -r .access_token)
 echo $auth_token
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/SecurityAdmin -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}'
+MDS_RBAC_ENDPOINT=http://broker:8091/security/1.0/principals
+KAFKA_CLUSTER_ID=vHCgQyIrRHG8Jv27qI2h3Q
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"schema-registry-demo", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/SecurityAdmin -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"_confluent-command", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"schema-registry-demo", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"_schemas", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"_confluent-command", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"schema-registry", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"_schemas", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"connect-cluster", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"schema-registry", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"connect-configs", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"connect-cluster", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"connect-offsets", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"connect-configs", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"connect-statuses", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"connect-offsets", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/SecurityAdmin -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q","connect-cluster":"connect-cluster"}}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"connect-statuses", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q","connect-cluster":"connect-cluster"}}, "resourcePatterns":[{"resourceType":"Connector", "name":"datagen-source-connector", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/SecurityAdmin -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q","connect-cluster":"connect-cluster"}}'
 
-curl -X POST http://broker:8091/security/1.0/principals/Group:/app_group1/roles/SystemAdmin -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q","connect-cluster":"connect-cluster"}}, "resourcePatterns":[{"resourceType":"Connector", "name":"datagen-source-connector", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json"  -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"test", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/Group:$APP_GROUP_NAME/roles/SystemAdmin -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}'
 
-curl -X POST http://broker:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token"  -i -H "Content-Type: application/json"  -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"console-consumer-group", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/User:$CLIENT_ID/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json"  -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"test", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/User:sr_client_app/roles/SystemAdmin -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}'
+curl -X POST $MDS_RBAC_ENDPOINT/User:$CLIENT_ID/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token"  -i -H "Content-Type: application/json"  -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"console-consumer-group", "patternType":"LITERAL"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/User:connect_client_app/roles/SystemAdmin  -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q","connect-cluster":"connect-cluster"}}'
+curl -X POST $MDS_RBAC_ENDPOINT/User:$SR_CLIENT_ID/roles/SystemAdmin -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}'
 
-curl -X POST http://broker:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}, "resourcePatterns":[{"resourceType":"Subject", "name":"test_topic", "patternType":"PREFIXED"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/User:$CONNECT_CLIENT_ID/roles/SystemAdmin  -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q","connect-cluster":"connect-cluster"}}'
 
-curl -X POST http://broker:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"test_topic", "patternType":"PREFIXED"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/User:$CLIENT_ID/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}, "resourcePatterns":[{"resourceType":"Subject", "name":"test_topic", "patternType":"PREFIXED"}]}'
 
-curl -X POST http://broker:8091/security/1.0/principals/User:client_app1/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"console-consumer-group", "patternType":"LITERAL"}]}'
+curl -X POST $MDS_RBAC_ENDPOINT/User:$CLIENT_ID/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"test_topic", "patternType":"PREFIXED"}]}'
 
-}
+curl -X POST $MDS_RBAC_ENDPOINT/User:$CLIENT_ID/roles/ResourceOwner/bindings -H "Authorization: Bearer $auth_token" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Group", "name":"console-consumer-group", "patternType":"LITERAL"}]}'
 
-create_topic(){
-docker exec broker kafka-topics --bootstrap-server broker:9095 --topic $1 --create --command-config /etc/confluent/configs/superuser_client.properties
 }
 
 install_connectors(){
@@ -62,21 +92,25 @@ install_connectors(){
 get_user_tokens(){
 
   export SUPER_USER_ACCESS_TOKEN=$(curl -s \
-    -d "client_id=superuser_client_app" \
-    -d "client_secret=superuser_client_app_secret" \
+    -d "client_id=$SUPERUSER_CLIENT_ID" \
+    -d "client_secret=$SUPERUSER_CLIENT_SECRET" \
     -d "grant_type=client_credentials" \
-    http://keycloak:8080/realms/cp/protocol/openid-connect/token | jq -r .access_token)
+    $IDP_TOKEN_ENDPOINT | jq -r .access_token)
 
   export SCHEMA_REGISTRY_ACCESS_TOKEN=$(curl -s \
-    -d "client_id=sr_client_app" \
-    -d "client_secret=sr_client_app_secret" \
+    -d "client_id=$SR_CLIENT_ID" \
+    -d "client_secret=$SR_CLIENT_SECRET" \
     -d "grant_type=client_credentials" \
-    http://keycloak:8080/realms/cp/protocol/openid-connect/token | jq -r .access_token)
+    $IDP_TOKEN_ENDPOINT | jq -r .access_token)
 
   export CONNECT_ACCESS_TOKEN=$(curl -s \
-    -d "client_id=connect_client_app" \
-    -d "client_secret=connect_client_app_secret" \
+    -d "client_id=$CONNECT_CLIENT_ID" \
+    -d "client_secret=$CONNECT_CLIENT_SECRET" \
     -d "grant_type=client_credentials" \
-    http://keycloak:8080/realms/cp/protocol/openid-connect/token | jq -r .access_token)
+    $IDP_TOKEN_ENDPOINT | jq -r .access_token)
 
+}
+
+create_topic(){
+docker exec broker kafka-topics --bootstrap-server broker:9095 --topic $1 --create --command-config /etc/confluent/configs/keycloak/superuser.properties
 }
