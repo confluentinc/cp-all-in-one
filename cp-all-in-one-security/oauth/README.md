@@ -31,6 +31,11 @@ To initialise the environment use the provided start script.
 ./start.sh
 ```
 
+If you want to run the local CP cluster with hosted dev okta
+```shell
+./start.sh okta
+```
+
 This will:
 
 1. Start a Keycloak server on port 8080. This acts as the OAuth identity provider.
