@@ -1,7 +1,14 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-source ${DIR}/helper/env.sh
+if [ "$1" ]; then
+  env_file=${DIR}/helper/env-$1.sh
+else
+  env_file=${DIR}/helper/env.sh
+fi
+echo "Processing $env_file"
+source $env_file
+
 source ${DIR}/helper/functions.sh
 
 #-------------------------------------------------------------------------------
@@ -15,6 +22,9 @@ create_certificates
 create_client_files
 
 # Start Keycloak and Broker instances
+if [ -z "$1" ]; then
+  docker-compose up --no-recreate -d keycloak
+fi
 docker-compose up --no-recreate -d broker
 
 echo "Waiting for 30 seconds to complete the broker startup"

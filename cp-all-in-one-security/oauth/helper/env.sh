@@ -5,6 +5,7 @@ export IDP_EXPECTED_ISSUER=http://keycloak:8080/realms/cp
 export IDP_AUTH_ENDPOINT=http://keycloak:8080/realms/cp/protocol/openid-connect/auth
 export SUB_CLAIM_NAME=clientId
 export GROUP_CLAIM_NAME=groups
+export EXPECTED_AUDIENCE=account
 
 # Client configurations
 export APP_GROUP_NAME='/app_group1'

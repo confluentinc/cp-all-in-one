@@ -1,5 +1,5 @@
 #!/bin/bash
-source ./env.sh
+#source ./env.sh
 
 update_cli_permissions(){
 

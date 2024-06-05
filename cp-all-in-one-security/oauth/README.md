@@ -175,3 +175,8 @@ Struct{registertime=1491524107119,userid=User_3,regionid=Region_3,gender=MALE}
 Struct{registertime=1492050173164,userid=User_6,regionid=Region_9,gender=MALE}
 Struct{registertime=1508229967208,userid=User_8,regionid=Region_3,gender=MALE}
 ```
+
+When done playing around shut down the containers
+```shell
+ docker-compose down
+```
