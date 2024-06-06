@@ -22,9 +22,6 @@ create_certificates
 create_client_files
 
 # Start Keycloak and Broker instances
-if [ -z "$1" ]; then
-  docker-compose up --no-recreate -d keycloak
-fi
 docker-compose up --no-recreate -d broker
 
 echo "Waiting for 30 seconds to complete the broker startup"
@@ -34,12 +31,10 @@ sleep 30
 assign_role_bindings
 
 # Get other CP component services
-docker-compose up --no-recreate -d schema-registry connect
+docker-compose up --no-recreate -d schema-registry connect control-center
 
 # Install some connectors for demo use case
-install_connectors
-
-docker-compose up --no-recreate -d control-center
+#install_connectors
 
 # Get different user tokens and set it in current session
-get_user_tokens
+#get_user_tokens

@@ -581,6 +581,27 @@
   "webAuthnPolicyPasswordlessExtraOrigins": [],
   "users": [
     {
+      "id" : "5efae8dc-08e8-4980-8453-cb81375a029b",
+      "createdTimestamp" : 1714511049862,
+      "username" : "c3user",
+      "enabled" : true,
+      "totp" : false,
+      "emailVerified" : false,
+      "credentials" : [ {
+        "id" : "2ed66bda-7f45-4f64-82f4-5a9843271329",
+        "type" : "password",
+        "userLabel" : "My password",
+        "createdDate" : 1714511070449,
+        "secretData" : "{\"value\":\"M3u4T2EY3NxN2hDTIczqx3AeP98KkhfJbbkxFjr0NpA=\",\"salt\":\"dkwxKD0fIiNKU9lpUipDMA==\",\"additionalParameters\":{}}",
+        "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+      } ],
+      "disableableCredentialTypes" : [ ],
+      "requiredActions" : [ ],
+      "realmRoles" : [ "default-roles-cp" ],
+      "notBefore" : 0,
+      "groups" : [ ]
+    },
+    {
       "id": "b1809ee0-8bd3-42c3-9d74-d991aacfcd5b",
       "createdTimestamp": 1717577724943,
       "username": "service-account-c3_client_app",
@@ -594,7 +615,9 @@
         "default-roles-cp"
       ],
       "notBefore": 0,
-      "groups": []
+      "groups": [
+        "/app_group1"
+      ]
     },
     {
       "id": "client_app1",

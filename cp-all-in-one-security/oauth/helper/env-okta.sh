@@ -5,6 +5,7 @@ export IDP_TOKEN_ENDPOINT=https://dev-59009577.okta.com/oauth2/aus96p2og3u7Cpwu6
 export IDP_JWKS_ENDPOINT=https://dev-59009577.okta.com/oauth2/aus96p2og3u7Cpwu65d7/v1/keys
 export IDP_EXPECTED_ISSUER=https://dev-59009577.okta.com/oauth2/aus96p2og3u7Cpwu65d7
 export IDP_AUTH_ENDPOINT=https://dev-59009577.okta.com/oauth2/aus96p2og3u7Cpwu65d7/v1/authorize
+export IDP_DEVICE_AUTH_ENDPOINT=https://dev-59009577.okta.com/oauth2/aus96p2og3u7Cpwu65d7/v1/device/authorize
 export SUB_CLAIM_NAME=sub
 export GROUP_CLAIM_NAME=groups
 export EXPECTED_AUDIENCE=api://default

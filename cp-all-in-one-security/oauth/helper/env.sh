@@ -3,6 +3,7 @@ export IDP_TOKEN_ENDPOINT=http://keycloak:8080/realms/cp/protocol/openid-connect
 export IDP_JWKS_ENDPOINT=http://keycloak:8080/realms/cp/protocol/openid-connect/certs
 export IDP_EXPECTED_ISSUER=http://keycloak:8080/realms/cp
 export IDP_AUTH_ENDPOINT=http://keycloak:8080/realms/cp/protocol/openid-connect/auth
+export IDP_DEVICE_AUTH_ENDPOINT=http://keycloak:8080/realms/cp/protocol/openid-connect/auth/device
 export SUB_CLAIM_NAME=clientId
 export GROUP_CLAIM_NAME=groups
 export EXPECTED_AUDIENCE=account
