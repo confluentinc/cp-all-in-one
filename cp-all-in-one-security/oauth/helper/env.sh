@@ -29,5 +29,5 @@ export C3_CLIENT_SECRET=c3_client_app_secret
 export CLIENT_ID=client_app1
 export CLIENT_SECRET=client_app1_secret
 
-export SSO_CLIENT_ID=ssologin
-export SSO_CLIENT_SECRET=ssologin_secret
+export SSO_CLIENT_ID=c3_sso_login
+export SSO_CLIENT_SECRET=c3_sso_login

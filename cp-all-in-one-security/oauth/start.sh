@@ -24,8 +24,8 @@ create_client_files
 # Start Keycloak and Broker instances
 docker-compose up --no-recreate -d broker
 
-echo "Waiting for 30 seconds to complete the broker startup"
-sleep 30
+echo "Waiting for 60 seconds to complete the broker startup"
+sleep 60
 
 # Assign all required role bindings.
 assign_role_bindings
