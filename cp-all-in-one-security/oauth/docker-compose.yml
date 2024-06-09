@@ -195,6 +195,10 @@ services:
               clientId="$SR_CLIENT_ID" \
               clientSecret="$SR_CLIENT_SECRET";
 
+      #Enable Schema Linking handler
+      SCHEMA_REGISTRY_KAFKASTORE_UPDATE_HANDLERS: 'io.confluent.schema.exporter.storage.SchemaExporterUpdateHandler'
+      SCHEMA_REGISTRY_PASSWORD_ENCODER_SECRET: random
+
       # Enable OAuth in SR server
       SCHEMA_REGISTRY_REST_SERVLET_INITIALIZOR_CLASSES: io.confluent.common.security.jetty.initializer.AuthenticationHandler
       SCHEMA_REGISTRY_OAUTHBEARER_JWKS_ENDPOINT_URL: $IDP_JWKS_ENDPOINT
@@ -203,7 +207,7 @@ services:
       SCHEMA_REGISTRY_OAUTHBEARER_SUB_CLAIM_NAME: $SUB_CLAIM_NAME
       SCHEMA_REGISTRY_OAUTHBEARER_GROUPS_CLAIM_NAME: $GROUP_CLAIM_NAME
 
-      SCHEMA_REGISTRY_RESOURCE.EXTENSION.CLASS: io.confluent.kafka.schemaregistry.security.SchemaRegistrySecurityResourceExtension
+      SCHEMA_REGISTRY_RESOURCE.EXTENSION.CLASS: io.confluent.kafka.schemaregistry.security.SchemaRegistrySecurityResourceExtension, io.confluent.schema.exporter.SchemaExporterResourceExtension
       SCHEMA_REGISTRY_CONFLUENT.SCHEMA.REGISTRY.AUTHORIZER.CLASS: io.confluent.kafka.schemaregistry.security.authorizer.rbac.RbacAuthorizer
       SCHEMA_REGISTRY_CONFLUENT.SCHEMA.REGISTRY.AUTH.MECHANISM: JETTY_AUTH
       SCHEMA_REGISTRY_PUBLIC_KEY_PATH: /tmp/conf/public.pem
