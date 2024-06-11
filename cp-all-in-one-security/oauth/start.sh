@@ -24,6 +24,8 @@ create_client_files
 # Start Keycloak and Broker instances
 docker-compose up --no-recreate -d broker
 
+# waiting for sometime to get broker fully started. If it takes more time than this
+# you may want to rerun the script.
 echo "Waiting for 60 seconds to complete the broker startup"
 sleep 60
 
@@ -34,7 +36,7 @@ assign_role_bindings
 docker-compose up --no-recreate -d schema-registry connect control-center
 
 # Install some connectors for demo use case
-#install_connectors
+install_connectors
 
 # Get different user tokens and set it in current session
-#get_user_tokens
+get_user_tokens

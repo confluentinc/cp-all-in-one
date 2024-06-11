@@ -180,8 +180,19 @@ Struct{registertime=1491524107119,userid=User_3,regionid=Region_3,gender=MALE}
 Struct{registertime=1492050173164,userid=User_6,regionid=Region_9,gender=MALE}
 Struct{registertime=1508229967208,userid=User_8,regionid=Region_3,gender=MALE}
 ```
+### SSO login in C3
+You can use any user defined in IDP to do interactive login to Confluent Control Center. Users part of group "g1" would get a permission of superuser.
+In Keycloak you can use below configured users.  
+```shell
+c3user:c3user
+c3superuser:c3user
+```
 
+### Troubleshooting 
+At times, the broker takes more than expected time ( 60 seconds) to completely start. If it fails, please re-run the startup scrip. The steps are idempotent, and not going to do any disruptive change.
 When done playing around shut down the containers
+
+### Bring Down the Cluster
 ```shell
  docker-compose down
 ```

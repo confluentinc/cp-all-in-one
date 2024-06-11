@@ -30,4 +30,8 @@ export CLIENT_ID=client_app1
 export CLIENT_SECRET=client_app1_secret
 
 export SSO_CLIENT_ID=c3_sso_login
-export SSO_CLIENT_SECRET=c3_sso_login
+export SSO_CLIENT_SECRET=c3_sso_login_secret
+
+export SSO_SUPER_USER_GROUP=/g1
+export SSO_USER_GROUP=/g2
+
