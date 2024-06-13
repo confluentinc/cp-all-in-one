@@ -185,8 +185,10 @@ You can use any user defined in IDP to do interactive login to Confluent Control
 In Keycloak you can use below configured users.  
 ```shell
 c3user:c3user
-c3superuser:c3user
+c3superuser:c3superuser
 ```
+
+Keycloak UI can be accessed at http://localhost:8080 (admin/admin)
 
 ### Troubleshooting 
 At times, the broker takes more than expected time ( 60 seconds) to completely start. If it fails, please re-run the startup scrip. The steps are idempotent, and not going to do any disruptive change.

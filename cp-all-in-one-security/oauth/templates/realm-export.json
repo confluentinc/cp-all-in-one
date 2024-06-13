@@ -2481,7 +2481,7 @@
       "type" : "password",
       "userLabel" : "My password",
       "createdDate" : 1717703279313,
-      "secretData" : "{\"value\":\"HdshFice6xPyUv6fLihhwadLsdmBcr9OFoQn0u6/1KM=\",\"salt\":\"hbSr0JEQ9yhKQFAg4KYEWg==\",\"additionalParameters\":{}}",
+      "secretData" : "{\"value\":\"avTDXptExxoF5x0NUUChQ/XGdpPelLwkmLlWbr9wkmQ=\",\"salt\":\"hbSr0JEQ9yhKQFAg4KYEWg==\",\"additionalParameters\":{}}",
       "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
     } ],
     "disableableCredentialTypes" : [ ],
@@ -2896,13 +2896,30 @@
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [
         {
+          "id": "54c19ad3-d0ec-4e28-a43c-7f1ded705bcb",
+          "name": "Client Id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "claim.value": "clientId",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "clientId",
+            "jsonType.label": "String",
+            "access.tokenResponse.claim": "true"
+          }
+        },
+        {
           "id": "836fbc03-d0c5-4ba3-a142-eacb1170f66d",
           "name": "groups",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-group-membership-mapper",
           "consentRequired": false,
           "config": {
-            "full.path": "true",
+            "full.path": "false",
             "introspection.token.claim": "true",
             "userinfo.token.claim": "true",
             "multivalued": "true",
