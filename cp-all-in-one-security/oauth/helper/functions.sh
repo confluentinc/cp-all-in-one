@@ -89,7 +89,7 @@ _assign_sr_role_bindings  $MDS_RBAC_ENDPOINT $auth_token
 _assign_connect_role_bindings $MDS_RBAC_ENDPOINT $auth_token
 _assign_c3_role_bindings $MDS_RBAC_ENDPOINT $auth_token
 _assign_client_role_bindings $MDS_RBAC_ENDPOINT $auth_token
-_assing_users_role_bindings $MDS_RBAC_ENDPOINT $auth_token
+#_assing_users_role_bindings $MDS_RBAC_ENDPOINT $auth_token
 }
 
 install_connectors(){
@@ -124,6 +124,12 @@ get_user_tokens(){
   export C3_ACCESS_TOKEN=$(curl -s \
     -d "client_id=$C3_CLIENT_ID" \
     -d "client_secret=$C3_CLIENT_SECRET" \
+    -d "grant_type=client_credentials" \
+    $IDP_TOKEN_ENDPOINT | jq -r .access_token)
+
+  export CLIENT_APP_TOKEN=$(curl -s \
+    -d "client_id=$CLIENT_ID" \
+    -d "client_secret=$CLIENT_SECRET" \
     -d "grant_type=client_credentials" \
     $IDP_TOKEN_ENDPOINT | jq -r .access_token)
 }

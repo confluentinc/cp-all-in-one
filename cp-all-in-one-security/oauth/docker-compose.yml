@@ -85,7 +85,7 @@ services:
         publicKeyPath="/tmp/conf/public.pem" \
         scope="$GROUP_CLAIM_NAME";
 
-      KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.confluent.kafka.server.plugins.auth.token.CompositeBearerValidatorCallbackHandler
+#      KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.confluent.kafka.server.plugins.auth.token.CompositeBearerValidatorCallbackHandler
       KAFKA_LISTENER_NAME_EXTERNAL_PRINCIPAL_BUILDER_CLASS: io.confluent.kafka.security.authenticator.OAuthKafkaPrincipalBuilder
       KAFKA_LISTENER_NAME_CONTROLLER_PRINCIPAL_BUILDER_CLASS: io.confluent.kafka.security.authenticator.OAuthKafkaPrincipalBuilder
       KAFKA_CONFLUENT_OAUTH_GROUPS_CLAIM_NAME: $GROUP_CLAIM_NAME
@@ -102,7 +102,7 @@ services:
       KAFKA_CONFLUENT_METADATA_SERVER_ADVERTISED_LISTENERS: http://broker:8091
       KAFKA_CONFLUENT_METADATA_SERVER_TOKEN_KEY_PATH: /tmp/conf/keypair.pem
       KAFKA_CONFLUENT_METADATA_SERVER_OPENAPI_ENABLE: 'true'
-      KAFKA_CONFLUENT_METADATA_SERVER_USER_STORE: OAUTH
+#      KAFKA_CONFLUENT_METADATA_SERVER_USER_STORE: OAUTH
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_JWKS_ENDPOINT_URL: ${IDP_JWKS_ENDPOINT}
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_ISSUER: ${IDP_EXPECTED_ISSUER}
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_AUDIENCE: $EXPECTED_AUDIENCE
@@ -185,7 +185,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:9095'
       SCHEMA_REGISTRY_GROUP_ID: schema-registry-demo
 
-      SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
+#      SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
       SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: SASL_PLAINTEXT
       SCHEMA_REGISTRY_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
       SCHEMA_REGISTRY_KAFKASTORE_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
@@ -199,7 +199,7 @@ services:
       SCHEMA_REGISTRY_PASSWORD_ENCODER_SECRET: random
 
       # Enable OAuth in SR server
-      SCHEMA_REGISTRY_REST_SERVLET_INITIALIZOR_CLASSES: io.confluent.common.security.jetty.initializer.AuthenticationHandler
+#      SCHEMA_REGISTRY_REST_SERVLET_INITIALIZOR_CLASSES: io.confluent.common.security.jetty.initializer.AuthenticationHandler
       SCHEMA_REGISTRY_OAUTHBEARER_JWKS_ENDPOINT_URL: $IDP_JWKS_ENDPOINT
       SCHEMA_REGISTRY_OAUTHBEARER_EXPECTED_ISSUER: $IDP_EXPECTED_ISSUER
       SCHEMA_REGISTRY_OAUTHBEARER_EXPECTED_AUDIENCE: $EXPECTED_AUDIENCE
@@ -208,7 +208,6 @@ services:
 
       SCHEMA_REGISTRY_RESOURCE.EXTENSION.CLASS: io.confluent.kafka.schemaregistry.security.SchemaRegistrySecurityResourceExtension, io.confluent.schema.exporter.SchemaExporterResourceExtension
       SCHEMA_REGISTRY_CONFLUENT.SCHEMA.REGISTRY.AUTHORIZER.CLASS: io.confluent.kafka.schemaregistry.security.authorizer.rbac.RbacAuthorizer
-      SCHEMA_REGISTRY_CONFLUENT.SCHEMA.REGISTRY.AUTH.MECHANISM: JETTY_AUTH
       SCHEMA_REGISTRY_PUBLIC_KEY_PATH: /tmp/conf/public.pem
 
       # Enable Rest monitoring
@@ -240,7 +239,6 @@ services:
     ports:
       - 8083:8083
     environment:
-      # CUB_CLASSPATH: '/usr/share/java/confluent-security/connect/*:/usr/share/java/kafka/*:/usr/share/java/cp-base-new/*'
 
       CONNECT_BOOTSTRAP_SERVERS: broker:9095
       CONNECT_LISTENERS: http://0.0.0.0:8083
@@ -329,10 +327,7 @@ services:
       CONNECT_ADMIN_SSL_KEYSTORE_PASSWORD: confluent
       CONNECT_ADMIN_SSL_KEY_PASSWORD: confluent
 
-      # io.confluent.connect.security.ConnectSecurityExtension - RBAC
-      # io.confluent.connect.secretregistry.ConnectSecretRegistryExtension - Secret Registry
       CONNECT_REST_EXTENSION_CLASSES: io.confluent.connect.security.ConnectSecurityExtension
-      #,io.confluent.connect.secretregistry.ConnectSecretRegistryExtension
       CONNECT_REST_SERVLET_INITIALIZOR_CLASSES: 'io.confluent.common.security.jetty.initializer.AuthenticationHandler'
       CONNECT_PUBLIC_KEY_PATH: /tmp/conf/public.pem
 
@@ -351,27 +346,6 @@ services:
 
       # Enable Rest monitoring
       CONNECT_REST_AUTH_JMX_ENABLED: 'true'
-
-      # Secret Registry
-      # CONNECT_CONFIG_PROVIDERS: 'secret'
-      # CONNECT_CONFIG_PROVIDERS_SECRET_CLASS: 'io.confluent.connect.secretregistry.rbac.config.provider.InternalSecretConfigProvider'
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_MASTER_ENCRYPTION_KEY: 'password1234'
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_BOOTSTRAP_SERVERS: kafka1:10091,kafka2:10092
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 2
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SECURITY_PROTOCOL: SASL_PLAINTEXT
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.connect.truststore.jks
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_TRUSTSTORE_PASSWORD: confluent
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEYSTORE_LOCATION: /etc/kafka/secrets/kafka.connect.keystore.jks
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEYSTORE_PASSWORD: confluent
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEY_PASSWORD: confluent
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
-      # CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_JAAS_CONFIG: |
-      #         org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
-      #         username="$SR_CLIENT_ID" \
-      #         password="$SR_CLIENT_SECRET";
-
-      # CONNECT_SSL_CIPHER_SUITES: ${SSL_CIPHER_SUITES}
 
       # Reduce Connect memory utilization
       KAFKA_JVM_PERFORMANCE_OPTS: -server -XX:+UseG1GC -XX:GCTimeRatio=1
@@ -406,7 +380,7 @@ services:
       # You can now remove all Control Center "STREAMS", "MONITORING", and "METRICS" configurations
       
       # general settings
-      CONTROL_CENTER_BOOTSTRAP_SERVERS: EXTERNAL://broker:9095
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: EXTERNAL://broker:9092
       CONTROL_CENTER_REPLICATION_FACTOR: 1
       CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
       CONTROL_CENTER_LOG4J_ROOT_LOGLEVEL: INFO
@@ -422,7 +396,6 @@ services:
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
               clientId="$C3_CLIENT_ID" \
               clientSecret="$C3_CLIENT_SECRET";
-#              scope="$GROUP_CLAIM_NAME";
   
 
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
@@ -433,7 +406,6 @@ services:
         org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
         clientId="$C3_CLIENT_ID" \
         clientSecret="$C3_CLIENT_SECRET";
-#        scope="$GROUP_CLAIM_NAME";
 
       CONTROL_CENTER_METRICS_TOPIC_REPLICATION: 1
       CONTROL_CENTER_METRICS_TOPIC_PARTITIONS: 1
@@ -448,7 +420,7 @@ services:
 
       # Connect
       CONTROL_CENTER_CONNECT_CONNECT1_CLUSTER: http://connect:8083
-      CONTROL_CENTER_CONNECT_CONNECT1_BEARER_AUTH_CREDENTIALS_SOURCE: OAUTHBEARER
+#      CONTROL_CENTER_CONNECT_CONNECT1_BEARER_AUTH_CREDENTIALS_SOURCE: OAUTHBEARER
 
       # Schema Registry
       CONTROL_CENTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
@@ -467,9 +439,9 @@ services:
       CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: $C3_CLIENT_SECRET
       CONFLUENT_METADATA_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
 
-      CONTROL_CENTER_AUTH_SSO_MODE: oidc
+#      CONTROL_CENTER_AUTH_SSO_MODE: oidc
       CONTROL_CENTER_CONFLUENT_CONTROLCENTER_LICENCE_MANAGER_ENABLE: "false"
       CONTROL_CENTER_MODE_ENABLE: "management"
 
-      CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_SERVER_URLS_FAIL_ON_401: 'false'
-      CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_ENABLE_SERVER_URLS_REFRESH: 'false'
+#      CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_SERVER_URLS_FAIL_ON_401: 'false'
+#      CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_ENABLE_SERVER_URLS_REFRESH: 'false'
