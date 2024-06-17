@@ -60,47 +60,12 @@ However, for this exercice, we want IDP to be user store for cluster.
 ```shell
 docker rm $(docker stop broker)
 docker-compose up -d broker
+docker logs -f broker
 ```
 This time, it would move forward and the broker should start now.   
 However, if you look at the broker logs you may find it flooded with below errors.
 ```
-was encountered reading the token endpoint response; will not attempt further retries
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.handleOutput(HttpAccessTokenRetriever.java:286)
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.post(HttpAccessTokenRetriever.java:194)
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.lambda$retrieve$0(HttpAccessTokenRetriever.java:169)
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.Retry.execute(Retry.java:70)
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.retrieve(HttpAccessTokenRetriever.java:160)
-        ... 8 more
-Caused by: java.io.IOException: The response code 400 and error response 
-```
-Looking at the exception, it seems that  the broker is trying to get/refresh the JavaWebKeys from configured IDP server, but its getting 400 (bad url).   
-Let's check the urls published by the IDP at http://localhost:8080/realms/cp/.well-known/openid-configuration.   
-
->**Fix it**   
->In env.sh file, update the value of `IDP_JWKS_ENDPOINT` with `jwks_uri` from above response.  
-***
-
-3. Once configuration is updated, we will try to restart the broker again with command mentioned in last step.  
->You can avoid purging the container, in that case the logs would be accumulated with previous runs. It may be difficult to isolate the new issue. 
-
-```
-[2024-06-14 19:05:55,564] WARN handleOutput - error retrieving data (org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever)
-java.io.IOException: Server returned HTTP response code: 400 for URL: http://keycloak:8080/realms/cp/protocol/openid-connect/auth
-        at java.base/jdk.internal.reflect.GeneratedConstructorAccessor41.newInstance(Unknown Source)
-        at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
-        at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
-        at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:480)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection$10.run(HttpURLConnection.java:2092)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection$10.run(HttpURLConnection.java:2087)
-        at java.base/java.security.AccessController.doPrivileged(AccessController.java:569)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection.getChainedException(HttpURLConnection.java:2086)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1634)
-        at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1614)
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.handleOutput(HttpAccessTokenRetriever.java:252)
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.post(HttpAccessTokenRetriever.java:194)
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.lambda$retrieve$0(HttpAccessTokenRetriever.java:169)
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.Retry.execute(Retry.java:70)
-        at org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.retrieve(HttpAccessTokenRetriever.java:160)
+        at org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.retrieve(HttpAccessTokenRetriever.java:181)
         at io.confluent.security.auth.client.oauth.RefreshingAccessTokenRetriever.retrieve(RefreshingAccessTokenRetriever.java:40)
         at io.confluent.security.auth.client.provider.HttpOauthBearerCredentialProvider.getCredentials(HttpOauthBearerCredentialProvider.java:31)
         at io.confluent.security.auth.client.rest.RestRequest.configureConnection(RestRequest.java:54)
@@ -109,16 +74,19 @@ java.io.IOException: Server returned HTTP response code: 400 for URL: http://key
         at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
         at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
         at java.base/java.lang.Thread.run(Thread.java:840)
-
+Caused by: org.apache.kafka.common.security.oauthbearer.internals.secured.UnretryableException: java.io.IOException: The response code 400 and error response {<!DOCTYPE html>
+ 
 ```
-The class `HttpAccessTokenRetriever` retrieves token from IDP based on the configured Client Credentials and Token Endpoint. 
-Since we are seeing 400, that indicates something wrong with the token end point. 
+Looking at the exception, it seems that  the broker is trying to get IDP Tokens. We have Kafka Proxy configured to connect to Kafka with OAUTHBEARER.  
+During startup, Kafka Proxy tries to get the token in order to connect with Kafka. However, Its fails with error code 400. This error indicates incorrect URL of Token End Point. 
+Let's check the urls published by the IDP at http://localhost:8080/realms/cp/.well-known/openid-configuration.   
+
 >**Fix it**   
->In env.sh file, update the value of `IDP_TOKEN_ENDPOINT` with  appropriate value from well known IDP url's reponse 
+>In env.sh file, update the value of `IDP_TOKEN_ENDPOINT` with value of `token_endpoint` from above response.  
 ***
 
 
-4. Once done above changes, lets try to start the Broker.  
+3. Once done above changes, lets try to start the Broker.  
 Since we have made the changes in variables, we have to ensure that new variables are available in the terminal.   
     ```shell
     source ./helper/env.sh
@@ -171,7 +139,58 @@ We are seeing 401 for the URL `http://keycloak:8080/realms/cp/protocol/openid-co
 >In env.sh file, add or update `export RP_CLIENT_SECRET=rp_client_app_secret`
 ***
 
-5.  Once above changes are done, we will try to bring the broker up again. 
+4. Try restarting the Broker.
+    ```
+   [2024-06-16 18:29:32,789] INFO 172.22.0.3 - - [16/Jun/2024:18:29:31 +0000] "GET /security/1.0/activenodes/http HTTP/1.1" 401 37 "-" "Java/17.0.11" requestTime-1295 httpStatusCode-401 (io.confluent.rest-utils.requests)
+[2024-06-16 18:29:32,789] ERROR Unexpected exception sending HTTP Request. (io.confluent.security.auth.client.rest.RestClient)
+io.confluent.security.auth.client.rest.exceptions.RestClientException: Unauthorized; error code: 401
+at io.confluent.security.auth.client.rest.RestClient$HTTPRequestSender.lambda$submit$0(RestClient.java:436)
+at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+at java.base/java.lang.Thread.run(Thread.java:840)
+
+    ```
+Kafka Broker may start at this time you might be seeing above exceptions. It Seems Kafka proxy is still not able to get authenticated, but there isn't very clear what the root cause is.  
+Let's enable Debug logs. Update the value `io.confluent.common.security.jetty` to `DEBUG` and restart the broker.   
+Now we see some more details 
+```
+[2024-06-17 00:45:45,455] ERROR Error while refreshing active metadata server urls, retrying (io.confluent.security.auth.client.rest.RestClient)
+io.confluent.security.auth.client.rest.exceptions.RestClientException: Unauthorized; error code: 401
+        at io.confluent.security.auth.client.rest.RestClient$HTTPRequestSender.lambda$submit$0(RestClient.java:436)
+        at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+        at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+        at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+        at java.base/java.lang.Thread.run(Thread.java:840)
+[2024-06-17 00:45:46,243] DEBUG Processing new Jwt login request to MultiJwtLoginService. (io.confluent.common.security.jetty.MultiJwtLoginService)
+[2024-06-17 00:45:46,244] DEBUG Issuer in request: http://keycloak:8080/realms/cp, Confluent issuer: Confluent, IdP issuer: http://keycloak:8080/realms/cp (io.confluent.common.security.jetty.MultiJwtLoginService)
+[2024-06-17 00:45:46,244] DEBUG Processing new Jwt login request. (io.confluent.common.security.jetty.JwtLoginService)
+[2024-06-17 00:45:47,541] DEBUG Exception (io.confluent.common.security.jetty.JwtLoginService)
+io.confluent.kafka.clients.plugins.auth.jwt.JwtVerificationException: Failed to validate authentication token : InvalidJwtException - Headers: [{"alg":"RS256","typ" : "JWT","kid" : "e8T4Cw7JgRAn3YaieN55zmBx1h607rvCN5Bnq73aQfU"}], Additional Details: [[JWT header field kid has no mapped public keys - The JWT header field Key Id {kid} is invalid as we could not find a suitable corresponding verification key., relatedClaims: {userResourceId=null, userId=null}, identityInfo: {providerId=null, identityPoolId=null}]] -> UnresolvableKeyException
+        at io.confluent.kafka.clients.plugins.auth.jwt.JwtAuthenticator.login(JwtAuthenticator.java:107)
+        at io.confluent.common.security.jetty.JwtLoginService.login(JwtLoginService.java:185)
+        at io.confluent.common.security.jetty.MultiJwtLoginService.login(MultiJwtLoginService.java:79)
+        at io.confluent.common.security.jetty.OAuthBearerAuthenticator.validateRequest(OAuthBearerAuthenticator.java:112)
+        at io.confluent.common.security.jetty.OAuthOrBasicAuthenticator.validateRequest(OAuthOrBasicAuthenticator.java:110)
+        at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:530)
+        at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:127)
+        at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:235)
+
+```
+We can see here that Kafka is trying to process a Token which has  `http://keycloak:8080/realms/cp` as issuer. That means the Client ( RP in this case ) is able to get a valid toke from the IDP.  
+However, the message in exception indicates that the Public Keys to validate the tokens are either not available or has not been refreshed. 
+```
+JWT header field kid has no mapped public keys - The JWT header field Key Id {kid} is invalid as we could not find a suitable corresponding verification key.
+```
+Let's verify the keys url from well known IDP configuration. 
+>**Fix it**   
+>In env.sh file, add or update IDP_JWKS_ENDPOINT to value of `jwks_uri` from well known url. In this case, it would be "http://localhost:8080/realms/cp/protocol/openid-connect/certs"
+***
+
+
+5.  Once above changes are done, we will try to bring the broker up again.   
+You may want to remove to debug logs to avoid too much of logs. 
+
     ```shell
     source ./helper/env.sh
     docker rm $(docker stop broker)
@@ -323,7 +342,14 @@ Having this configured helps in upgrade use cases where LDAP and OAuth can co-ex
 >add or uncomment `KAFKA_LISTENER_NAME_EXTERNAL_OAUTHBEARER_SASL_SERVER_CALLBACK_HANDLER_CLASS: io.confluent.kafka.server.plugins.auth.token.CompositeBearerValidatorCallbackHandler`
 ***
 
-10. Let's restart the Schema Registry after configuration update. At this stage, we may face exception like 
+10. Since the above changes are in Kafka, we need to restart it before Schema Registry.
+    ```shell
+    docker rm $(docker stop broker)
+    ./start.sh # This would take care of Broker and SR restart along with assigning Role Bindings.
+    docker logs -f schema-registry 
+    ```
+
+At this stage, we may face exception like 
 ```
 [2024-06-15 11:06:55,182] INFO [Principal=:e5172ec0-25d6-4684-8614-f2adb23c529d]: Expiring credential re-login thread has been interrupted and will exit. (org.apache.kafka.common.security.oauthbearer.internals.expiring.ExpiringCredentialRefreshingLogin)
 [2024-06-15 11:06:55,183] ERROR Error starting the schema registry (io.confluent.kafka.schemaregistry.rest.SchemaRegistryRestApplication)
