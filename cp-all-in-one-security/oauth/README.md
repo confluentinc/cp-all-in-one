@@ -190,6 +190,28 @@ c3superuser:c3superuser
 
 Keycloak UI can be accessed at http://localhost:8080 (admin/admin)
 
+### SSO login in CLI 
+
+1. Download the CLI binary that supports CLI SSO login for CP.
+2. You can enable CLI SSO in the CLI context, or by simply exporting it 
+
+```
+export CONFLUENT_PLATFORM_SSO=true
+```
+You can use any user defined in IDP to do interactive login to Confluent Control Center. Users part of group "g1" would get a permission of superuser.
+In Keycloak you can use below configured users.
+
+```shell
+c3user:c3user
+c3superuser:c3superuser
+```
+
+You can try to login by specifying your MDS URL for CP cluster
+
+```
+$PATH_TO_CLI_BINARY/confluent login --url http://localhost:8091
+```
+
 ### Troubleshooting 
 At times, the broker takes more than expected time ( 60 seconds) to completely start. If it fails, please re-run the startup scrip. The steps are idempotent, and not going to do any disruptive change.
 When done playing around shut down the containers
