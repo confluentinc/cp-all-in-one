@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "kafka_prometheus"
+    static_configs:
+      - targets:
+          - "broker:1234"
+        labels:
+          env: "dev"
+    relabel_configs:
+      - source_labels: [ __address__ ]
+        target_label: instance
+        regex: '([^:]+)(:[0-9]+)?'
+        replacement: '${1}'

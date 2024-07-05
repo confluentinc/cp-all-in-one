@@ -35,6 +35,9 @@ assign_role_bindings
 # Get other CP component services
 docker-compose up --no-recreate -d schema-registry connect control-center
 
+# Get prometheus and Grafana up
+docker-compose up --no-recreate -d prometheus grafana
+
 # Install some connectors for demo use case
 install_connectors
 

@@ -40,6 +40,7 @@ services:
       - "9101:9101"
       - "9095:9095"
       - "8091:8091"
+      - "1234:1234"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
@@ -157,11 +158,15 @@ services:
       KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_SECURITY_EVENT_LOGGER_AUTHENTICATION_ENABLE: 'true'
+      KAFKA_OPTS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1234:/usr/bin/jmx/exporter.yml"
 
     volumes:
       - ./keypair:/tmp/conf
       - ./configs:/etc/confluent/configs
       - ./bin/confluent:/usr/bin/confluent
+      - ./bin/jmx_prometheus_javaagent-0.15.0.jar:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar
+      - ./metrics/exporter.yml:/usr/bin/jmx/exporter.yml
 
     command: "bash -c 'if [ ! -f /tmp/conf/keypair.pem ]; then echo \"ERROR: Did you forget the create-certificates.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /etc/confluent/docker/run ; fi'"
 
@@ -241,7 +246,6 @@ services:
       - 8083:8083
     environment:
       # CUB_CLASSPATH: '/usr/share/java/confluent-security/connect/*:/usr/share/java/kafka/*:/usr/share/java/cp-base-new/*'
-
       CONNECT_BOOTSTRAP_SERVERS: broker:9095
       CONNECT_LISTENERS: http://0.0.0.0:8083
       CONNECT_GROUP_ID: "connect-cluster"
@@ -473,3 +477,31 @@ services:
 
       CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_SERVER_URLS_FAIL_ON_401: 'false'
       CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_ENABLE_SERVER_URLS_REFRESH: 'false'
+
+  prometheus:
+    image: prom/prometheus
+    hostname: prometheus
+    container_name: prometheus
+    depends_on:
+      broker:
+        condition: service_healthy
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    hostname: grafana
+    container_name: grafana
+    depends_on:
+      broker:
+        condition: service_healthy
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./metrics/grafana/provisioning:/etc/grafana/provisioning
+      - ./metrics/grafana/grafana_default_dashboard.json:/var/lib/grafana/dashboards/grafana_default_dashboard.json
