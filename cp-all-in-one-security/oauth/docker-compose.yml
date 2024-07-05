@@ -246,10 +246,14 @@ services:
       - ./keypair:/tmp/conf
       - ./bin/confluent:/usr/bin/confluent
       - ./configs:/etc/confluent/configs
+      - ./bin/jmx_prometheus_javaagent-0.15.0.jar:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar
+      - ./metrics/exporter.yml:/usr/bin/jmx/exporter.yml
     ports:
       - 8083:8083
+      - 1236:1236
     environment:
       # CUB_CLASSPATH: '/usr/share/java/confluent-security/connect/*:/usr/share/java/kafka/*:/usr/share/java/cp-base-new/*'
+      EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1236:/usr/bin/jmx/exporter.yml"
       CONNECT_BOOTSTRAP_SERVERS: broker:9095
       CONNECT_LISTENERS: http://0.0.0.0:8083
       CONNECT_GROUP_ID: "connect-cluster"
@@ -402,13 +406,17 @@ services:
     volumes:
       - ./keypair:/tmp/conf
       - ./configs:/etc/confluent/configs
+      - ./bin/jmx_prometheus_javaagent-0.15.0.jar:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar
+      - ./metrics/exporter.yml:/usr/bin/jmx/exporter.yml
     # command: "rm -rf /usr/share/java/confluent-control-center/protobuf-java-util-3.24.4.jar && /etc/confluent/docker/launch;'"
     ports:
       - 9021:9021
       - 9022:9022
+      - 1237:1237
     environment:
       CUB_CLASSPATH: '/usr/share/java/confluent-control-center/*:/usr/share/java/rest-utils/*:/usr/share/java/confluent-common/*:/usr/share/java/confluent-security/kafka-rest/*:/usr/share/java/kafka-rest/:/usr/share/java/cp-base-new/*'
-      
+      EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1237:/usr/bin/jmx/exporter.yml"
+
       # If using Confluent Health+ for monitoring and alerting, uncomment the line below to run in management mode.
       # CONTROL_CENTER_MODE_ENABLE: "management"
       # You can now remove all Control Center "STREAMS", "MONITORING", and "METRICS" configurations

@@ -7,6 +7,8 @@ scrape_configs:
       - targets:
           - "broker:1234"
           - "schema-registry:1235"
+          - "connect:1236"
+          - "control-center:1237"
         labels:
           env: "dev"
     relabel_configs:
