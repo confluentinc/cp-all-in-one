@@ -2,10 +2,11 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: "kafka_prometheus"
+  - job_name: "prometheus"
     static_configs:
       - targets:
           - "broker:1234"
+          - "schema-registry:1235"
         labels:
           env: "dev"
     relabel_configs:

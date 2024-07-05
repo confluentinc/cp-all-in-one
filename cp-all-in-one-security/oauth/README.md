@@ -45,7 +45,8 @@ This will:
 5. Configure Schema registry, Connect and Control Center to work on OAuth.
 6. Datagen source connector plugin is added in Connect.
 7. Configures Control Center to talk to MDS, SR and Connect. 
-8. Adds some access tokens to environment variable. these will be valid for 1 hour, post that token access commands need to be run again.
+8. Configure prometheus and grafana for metrics visualization
+9. Adds some access tokens to environment variable. these will be valid for 1 hour, post that token access commands need to be run again.
    
 ### Produce and Consume to Kafka using OAuth from Broker
 
@@ -72,11 +73,13 @@ List available schemas on the cluster: The `$SCHEMA_REGISTRY_ACCESS_TOKEN` would
 <details open>
   <summary>Get Schema Registry client access token</summary> 
 
+```shell
 export SCHEMA_REGISTRY_ACCESS_TOKEN=$(curl -s\
     -d "client_id=sr_client_app" \
     -d "client_secret=sr_client_app_secret" \
     -d "grant_type=client_credentials" \
     http://keycloak:8080/realms/cp/protocol/openid-connect/token | jq -r .access_token)
+```
 </details>
 
 #### Ensure the token is valid
@@ -211,6 +214,12 @@ You can try to login by specifying your MDS URL for CP cluster
 ```
 $PATH_TO_CLI_BINARY/confluent login --url http://localhost:8091
 ```
+
+### Visualize metrics with Prometheus and Grafana
+
+This setup includes Prometheus and Grafana to visualize metrics.
+Grafana can be accessed via http://localhost:3000 using the `admin:admin` credentials.
+JMX exporter configs are present [here](./metrics/exporter.yml), which can tweaked as per your liking.
 
 ### Troubleshooting 
 At times, the broker takes more than expected time ( 60 seconds) to completely start. If it fails, please re-run the startup scrip. The steps are idempotent, and not going to do any disruptive change.

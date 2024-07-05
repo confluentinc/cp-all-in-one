@@ -159,7 +159,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_CONFLUENT_SECURITY_EVENT_LOGGER_AUTHENTICATION_ENABLE: 'true'
-      KAFKA_OPTS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1234:/usr/bin/jmx/exporter.yml"
+      EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1234:/usr/bin/jmx/exporter.yml"
 
     volumes:
       - ./keypair:/tmp/conf
@@ -179,12 +179,16 @@ services:
         condition: service_healthy
     ports:
       - "8081:8081"
+      - "1235:1235"
     volumes:
       - ./keypair:/tmp/conf
       - ./bin/confluent:/usr/bin/confluent
       - ./configs:/etc/confluent/configs
+      - ./bin/jmx_prometheus_javaagent-0.15.0.jar:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar
+      - ./metrics/exporter.yml:/usr/bin/jmx/exporter.yml
     environment:
 
+      EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1235:/usr/bin/jmx/exporter.yml"
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:9095'
