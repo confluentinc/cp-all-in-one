@@ -97,13 +97,13 @@ docker exec -it schema-registry /bin/bash
 ```
 
 ```console
-kafka-avro-console-producer \ 
+kafka-avro-console-producer \
 --bootstrap-server broker:9095 \
 --property bearer.auth.credentials.source=OAUTHBEARER \
---property bearer.auth.issuer.endpoint.url=http://keycloak:8080/realms/cp/protocol/openid-connect/token \ 
+--property bearer.auth.issuer.endpoint.url=http://keycloak:8080/realms/cp/protocol/openid-connect/token \
 --property bearer.auth.client.id=client_app1 \
---property bearer.auth.client.secret=client_app1_secret \  
---producer.config /etc/confluent/configs/client.properties \ 
+--property bearer.auth.client.secret=client_app1_secret \
+--producer.config /etc/confluent/configs/client.properties \
 --topic test_topic \
 --property value.schema='{"type":"record","name":"Transaction","fields":[{"name":"id","type":"string"},{"name": "amount", "type": "double"}]}'
 ```
