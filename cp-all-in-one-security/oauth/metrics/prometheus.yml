@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets:
+          - "broker:1234"
+          - "schema-registry:1235"
+          - "connect:1236"
+          - "control-center:1237"
+        labels:
+          env: "dev"
+    relabel_configs:
+      - source_labels: [ __address__ ]
+        target_label: instance
+        regex: '([^:]+)(:[0-9]+)?'
+        replacement: '${1}'
