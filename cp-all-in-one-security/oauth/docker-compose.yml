@@ -1,13 +1,12 @@
 ---
-version: '2'
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0.5
+    image: quay.io/keycloak/keycloak:25.0.2
     hostname: keycloak
     container_name: keycloak
     command: ["start-dev", "--health-enabled=true", "--import-realm"]
     healthcheck:
-      test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/health/live']
+      test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:9000/health/live']
       start_period: 10s
       interval: 10s
       retries: 3
@@ -19,12 +18,13 @@ services:
       - KEYCLOAK_IMPORT=/opt/keycloak/data/import/realm-export.json
     ports:
       - "8080:8080"
+      - "9000:9000"
     volumes:
       - ./templates/realm-export.json:/opt/keycloak/data/import/realm-export.json
 
 
   broker:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-server:7.7.x-latest-ubi8
+    image: ${DOCKER_REGISTRY}confluentinc/cp-server:7.7.0
     hostname: broker
     container_name: broker
     depends_on:
@@ -171,7 +171,7 @@ services:
     command: "bash -c 'if [ ! -f /tmp/conf/keypair.pem ]; then echo \"ERROR: Did you forget the create-certificates.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /etc/confluent/docker/run ; fi'"
 
   schema-registry:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-schema-registry:7.7.x-latest-ubi8
+    image: ${DOCKER_REGISTRY}confluentinc/cp-schema-registry:7.7.0
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -231,7 +231,7 @@ services:
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: $SR_CLIENT_SECRET
 
   connect:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-server-connect:7.7.x-latest-ubi8
+    image: ${DOCKER_REGISTRY}confluentinc/cp-server-connect:7.7.0
     container_name: connect
     hostname: connect
 #    restart: always
@@ -348,11 +348,11 @@ services:
       CONNECT_REST_SERVLET_INITIALIZOR_CLASSES: 'io.confluent.common.security.jetty.initializer.AuthenticationHandler'
       CONNECT_PUBLIC_KEY_PATH: /tmp/conf/public.pem
 
-      CONNECT_SASL_OAUTHBEARER_JWKS_ENDPOINT_URL: $IDP_JWKS_ENDPOINT
-      CONNECT_SASL_OAUTHBEARER_EXPECTED_ISSUER: $IDP_EXPECTED_ISSUER
-      CONNECT_SASL_OAUTHBEARER_EXPECTED_AUDIENCE: $EXPECTED_AUDIENCE
-      CONNECT_SASL_OAUTHBEARER_SUB_CLAIM_NAME: $SUB_CLAIM_NAME
-      CONNECT_SASL_OAUTHBEARER_GROUPS_CLAIM_NAME: $GROUP_CLAIM_NAME
+      CONNECT_OAUTHBEARER_JWKS_ENDPOINT_URL: $IDP_JWKS_ENDPOINT
+      CONNECT_OAUTHBEARER_EXPECTED_ISSUER: $IDP_EXPECTED_ISSUER
+      CONNECT_OAUTHBEARER_EXPECTED_AUDIENCE: $EXPECTED_AUDIENCE
+      CONNECT_OAUTHBEARER_SUB_CLAIM_NAME: $SUB_CLAIM_NAME
+      CONNECT_OAUTHBEARER_GROUPS_CLAIM_NAME: $GROUP_CLAIM_NAME
 
        # For connecting to MDS
       CONNECT_CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://broker:8091
@@ -392,7 +392,7 @@ services:
                   -XX:MaxInlineLevel=15 -Djava.awt.headless=true
 
   control-center:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:7.7.x-latest-ubi8
+    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:7.7.0
     hostname: control-center
     container_name: control-center
     healthcheck:

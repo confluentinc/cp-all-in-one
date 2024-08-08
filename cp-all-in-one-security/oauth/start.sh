@@ -22,7 +22,7 @@ create_certificates
 create_client_files
 
 # Start Keycloak and Broker instances
-docker-compose up --no-recreate -d broker
+docker compose up --no-recreate -d broker
 
 # waiting for sometime to get broker fully started. If it takes more time than this
 # you may want to rerun the script.
@@ -33,10 +33,10 @@ sleep 60
 assign_role_bindings
 
 # Get other CP component services
-docker-compose up --no-recreate -d schema-registry connect control-center
+docker compose up --no-recreate -d schema-registry connect control-center
 
 # Get prometheus and Grafana up
-docker-compose up --no-recreate -d prometheus grafana
+docker compose up --no-recreate -d prometheus grafana
 
 # Install some connectors for demo use case
 install_connectors
