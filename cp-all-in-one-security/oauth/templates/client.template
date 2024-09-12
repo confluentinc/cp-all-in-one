@@ -1,0 +1,8 @@
+sasl.mechanism=OAUTHBEARER
+security.protocol=SASL_PLAINTEXT
+group.id=console-consumer-group
+sasl.login.callback.handler.class=org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+sasl.oauthbearer.token.endpoint.url=$IDP_TOKEN_ENDPOINT
+sasl.jaas.config=org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+      clientId="$CLIENT_APP_ID" \
+      clientSecret="$CLIENT_APP_SECRET";
