@@ -391,6 +391,89 @@ services:
                   -XX:MaxGCPauseMillis=10000 -XX:InitiatingHeapOccupancyPercent=35 -XX:+ExplicitGCInvokesConcurrent
                   -XX:MaxInlineLevel=15 -Djava.awt.headless=true
 
+  ksqldb-server:
+    image: ${DOCKER_REGISTRY}confluentinc/cp-ksqldb-server:${CONFLUENT_DOCKER_TAG:-latest}
+    hostname: ksqldb-server
+    container_name: ksqldb-server
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./keypair:/tmp/conf
+    ports:
+      - "8088:8088"
+      - "1238:1238"
+    environment:
+      KSQL_OPTS: '-Dconfluent.support.metrics.enable=false'
+      CUB_CLASSPATH: '/usr/share/java/confluent-security/ksql/*:/usr/share/java/ksqldb-server/*:/usr/share/java/cp-base-new/*'
+
+      KSQL_LOG4J_ROOT_LOGLEVEL: INFO
+
+      KSQL_KSQL_SERVICE_ID: "ksql-cluster"
+      KSQL_KSQL_STREAMS_REPLICATION_FACTOR: 1
+      KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 1
+
+      # For Demo purposes: improve resource utilization and avoid timeouts
+      KSQL_KSQL_STREAMS_NUM_STREAM_THREADS: 1
+
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
+      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
+
+      KSQL_PRODUCER_ENABLE_IDEMPOTENCE: 'true'
+
+      KSQL_BOOTSTRAP_SERVERS: broker:9095
+      KSQL_HOST_NAME: ksqldb-server
+      KSQL_LISTENERS: "http://0.0.0.0:8088"
+      KSQL_CACHE_MAX_BYTES_BUFFERING: 0
+
+      # Enable RBAC on ksqlDB server
+      KSQL_KSQL_SECURITY_EXTENSION_CLASS: io.confluent.ksql.security.KsqlConfluentSecurityExtension
+
+      # Enable bearer token authentication which allows the identity of the ksqlDB end user to be propagated to Kafka for authorization
+      KSQL_KSQL_AUTHENTICATION_PLUGIN_CLASS: io.confluent.ksql.security.VertxAuthenticationHandlerPlugin
+      KSQL_PUBLIC_KEY_PATH: /tmp/conf/public.pem
+      KSQL_OAUTHBEARER_JWKS_ENDPOINT_URL: $IDP_JWKS_ENDPOINT
+      KSQL_OAUTHBEARER_EXPECTED_ISSUER: $IDP_EXPECTED_ISSUER
+      KSQL_OAUTHBEARER_EXPECTED_AUDIENCE: $EXPECTED_AUDIENCE
+      KSQL_OAUTHBEARER_SUB_CLAIM_NAME: $SUB_CLAIM_NAME
+      KSQL_OAUTHBEARER_GROUPS_CLAIM_NAME: $GROUP_CLAIM_NAME
+
+      # Used by ksqlDB's REST layer to connect to MDS to verify tokens and authenticate clients
+      KSQL_CONFLUENT_METADATA_BOOTSTRAP_SERVER_URLS: http://broker:8091
+      KSQL_CONFLUENT_METADATA_HTTP_AUTH_CREDENTIALS_PROVIDER: 'OAUTHBEARER'
+      KSQL_CONFLUENT_METADATA_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
+      KSQL_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_ID: $KSQL_CLIENT_ID
+      KSQL_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: $KSQL_CLIENT_SECRET
+
+      # ksqlDB to SR on OAuth
+      KSQL_SCHEMA_REGISTRY_BEARER_AUTH_CREDENTIALS_SOURCE: 'OAUTHBEARER'
+      KSQL_SCHEMA_REGISTRY_BEARER_AUTH_ISSUER_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
+      KSQL_SCHEMA_REGISTRY_BEARER_AUTH_CLIENT_ID: $KSQL_CLIENT_ID
+      KSQL_SCHEMA_REGISTRY_BEARER_AUTH_CLIENT_SECRET: $KSQL_CLIENT_SECRET
+
+      # Enable OAuth for ksqlDB's embedded Kafka clients that access and manage consumer groups and topics
+      KSQL_SASL_MECHANISM: 'OAUTHBEARER'
+      KSQL_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      KSQL_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      KSQL_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
+      KSQL_SASL_JAAS_CONFIG: |
+        org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+        clientId="$KSQL_CLIENT_ID" \
+        clientSecret="$KSQL_CLIENT_SECRET";   
+
+      # Confluent Monitoring Interceptors for Control Center streams monitoring
+      KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
+      KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+      KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SECURITY_PROTOCOL: SASL_PLAINTEXT
+      KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: OAUTHBEARER
+      KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+      KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
+      KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: |
+        org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
+              clientId="$KSQL_CLIENT_ID" \
+              clientSecret="$KSQL_CLIENT_SECRET";
+
   control-center:
     image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:${CONFLUENT_DOCKER_TAG:-latest}
     hostname: control-center
@@ -467,6 +550,9 @@ services:
       # Schema Registry
       CONTROL_CENTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONTROL_CENTER_SCHEMA_REGISTRY_BEARER_AUTH_CREDENTIALS_SOURCE: OAUTHBEARER
+
+      # KsqlDB
+      CONTROL_CENTER_KSQL_KSQLDB_URL: http://ksqldb-server:8088
 
       # RBAC
       CONTROL_CENTER_REST_AUTHENTICATION_METHOD: BEARER

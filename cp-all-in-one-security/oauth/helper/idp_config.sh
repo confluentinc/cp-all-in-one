@@ -26,6 +26,9 @@ export CONNECT_CLIENT_SECRET=connect_client_app_secret
 export CONNECT_SECRET_PROTECTION_CLIENT_ID=connect_sr_client_app
 export CONNECT_SECRET_PROTECTION_CLIENT_SECRET=connect_sr_client_app_secret
 
+export KSQL_CLIENT_ID=ksql_client_app
+export KSQL_CLIENT_SECRET=ksql_client_app_secret
+
 export C3_CLIENT_ID=c3_client_app
 export C3_CLIENT_SECRET=c3_client_app_secret
 
