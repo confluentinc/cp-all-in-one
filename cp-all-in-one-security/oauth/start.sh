@@ -27,7 +27,7 @@ docker compose up -d broker
 # waiting for sometime to get broker fully started. If it takes more time than this
 # you may want to rerun the script.
 echo "Waiting for 60 seconds to complete the broker startup"
-sleep 45
+sleep 60
 
 # Assign all required role bindings.
 assign_role_bindings

@@ -213,7 +213,7 @@ export KSQL_ACCESS_TOKEN=$(curl -s \
 ```
 </details>
 
-#### Ensure token is valid
+#### Ensure token is valid and the KSQL service is running fine
 
 ```
 curl --http1.1 \                                                                                                      ✘ INT 00:16:18
@@ -231,7 +231,24 @@ Output should resemble something like
 
 #### Execute KSQL commands
 
-Executing `LIST STREAMS;`
+1. Creating a stream
+```
+curl --http1.1 \
+     -X "POST" "http://ksqldb-server:8088/ksql" \
+     -H "Accept: application/vnd.ksql.v1+json" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer $KSQL_ACCESS_TOKEN" \
+     -d $'{
+  "ksql": "CREATE STREAM ABC (ORDER_ID BIGINT, PRODUCT_ID STRING, USER_ID STRING) WITH (KAFKA_TOPIC='\''orders'\'', KEY_FORMAT='\''KAFKA'\'', PARTITIONS=2, VALUE_FORMAT='\''JSON'\'');",
+  "streamsProperties": {}
+}'
+```
+Output should resemble something like
+```
+[{"@type":"currentStatus","statementText":"CREATE STREAM ABC (ORDER_ID BIGINT, PRODUCT_ID STRING, USER_ID STRING) WITH (CLEANUP_POLICY='delete', KAFKA_TOPIC='orders', KEY_FORMAT='KAFKA', PARTITIONS=2, VALUE_FORMAT='JSON');","commandId":"stream/`ABC`/create","commandStatus":{"status":"SUCCESS","message":"Stream created","queryId":null},"commandSequenceNumber":4,"warnings":[]}]%    
+```
+
+2. Executing `LIST STREAMS;`
 ```
 curl --http1.1 \
      -X "POST" "http://ksqldb-server:8088/ksql" \
@@ -249,6 +266,26 @@ Output should resemble something like
 ```
 [{"@type":"streams","statementText":"LIST STREAMS;","streams":[{"type":"STREAM","name":"KSQL_PROCESSING_LOG","topic":"ksql-clusterksql_processing_log","keyFormat":"KAFKA","valueFormat":"JSON","isWindowed":false},{"type":"STREAM","name":"ABC","topic":"orders","keyFormat":"KAFKA","valueFormat":"JSON","isWindowed":false}],"warnings":[]}]%   
 ```
+
+3. Executing a Qeury
+
+```
+curl --http1.1 \
+  -X "POST" "http://ksqldb-server:8088/query" \
+  -H "Accept: application/vnd.ksql.v1+json" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $KSQL_ACCESS_TOKEN" \
+  -d $'{
+    "ksql": "SELECT * FROM ABC;",
+    "streamsProperties": {}
+}'
+```
+Output should resemble something like
+```
+[{"header":{"queryId":"transient_ABC_6642724535724232317","schema":"`ORDER_ID` BIGINT, `PRODUCT_ID` STRING, `USER_ID` STRING"}},
+{"finalMessage":"Query Completed"}]%    
+```
+
 
 ### SSO login in C3
 You can use any user defined in the IDP to do interactive login to Confluent Control Center. Users part of group "g1" would get a permission of superuser.
