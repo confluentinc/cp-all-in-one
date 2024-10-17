@@ -51,10 +51,16 @@ _assign_connect_role_bindings() {
   curl -X POST $1/User:$CONNECT_SECRET_PROTECTION_CLIENT_ID/roles/ResourceOwner/bindings -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"_confluent-secrets", "patternType":"LITERAL"}]}'
 }
 
+_assign_ksql_role_bindings() {
+    curl -X POST $1/User:$KSQL_CLIENT_ID/roles/SystemAdmin -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}'
+    curl -X POST $1/User:$KSQL_CLIENT_ID/roles/SystemAdmin -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "ksql-cluster":"ksql-cluster"}}'
+}
+
 _assign_c3_role_bindings() {
 
   curl -X POST $1/User:$C3_CLIENT_ID/roles/SystemAdmin -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}'
   curl -X POST $1/User:$C3_CLIENT_ID/roles/SystemAdmin -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}'
+  curl -X POST $1/User:$C3_CLIENT_ID/roles/SystemAdmin -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "ksql-cluster":"ksql-cluster"}}'
   curl -X POST $1/User:$C3_CLIENT_ID/roles/ResourceOwner/bindings -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"scope":{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}, "resourcePatterns":[{"resourceType":"Topic", "name":"_confluent-command", "patternType":"LITERAL"}]}'
 
 }
@@ -72,12 +78,12 @@ _assign_client_role_bindings() {
 
 }
 
-_assing_users_role_bindings(){
+_assign_users_role_bindings(){
 
   curl -X POST $1/Group:$SSO_SUPER_USER_GROUP/roles/SystemAdmin -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q"}}'
   curl -X POST $1/Group:$SSO_SUPER_USER_GROUP/roles/SystemAdmin -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "schema-registry-cluster":"schema-registry"}}'
   curl -X POST $1/Group:$SSO_SUPER_USER_GROUP/roles/SystemAdmin -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "connect-cluster":"connect-cluster"}}'
-
+  curl -X POST $1/Group:$SSO_SUPER_USER_GROUP/roles/SystemAdmin -H "Authorization: Bearer $2" -i -H "Content-Type: application/json" -H "Accept: application/json" -d '{"clusters":{"kafka-cluster":"vHCgQyIrRHG8Jv27qI2h3Q", "ksql-cluster":"ksql-cluster"}}'
 }
 
 # Assign application role bindings
@@ -90,9 +96,10 @@ MDS_RBAC_ENDPOINT=http://broker:8091/security/1.0/principals
 
 _assign_sr_role_bindings  $MDS_RBAC_ENDPOINT $auth_token
 _assign_connect_role_bindings $MDS_RBAC_ENDPOINT $auth_token
+_assign_ksql_role_bindings $MDS_RBAC_ENDPOINT $auth_token
 _assign_c3_role_bindings $MDS_RBAC_ENDPOINT $auth_token
 _assign_client_role_bindings $MDS_RBAC_ENDPOINT $auth_token
-_assing_users_role_bindings $MDS_RBAC_ENDPOINT $auth_token
+_assign_users_role_bindings $MDS_RBAC_ENDPOINT $auth_token
 }
 
 install_connectors(){
@@ -131,6 +138,12 @@ set_user_tokens(){
     -d "client_secret=$CONNECT_CLIENT_SECRET" \
     -d "grant_type=client_credentials" \
     $IDP_TOKEN_ENDPOINT | jq -r .access_token)
+
+  export KSQL_ACCESS_TOKEN=$(curl -s \
+     -d "client_id=$KSQL_CLIENT_ID" \
+     -d "client_secret=$KSQL_CLIENT_SECRET" \
+     -d "grant_type=client_credentials" \
+     $IDP_TOKEN_ENDPOINT | jq -r .access_token)
 
   export C3_ACCESS_TOKEN=$(curl -s \
     -d "client_id=$C3_CLIENT_ID" \

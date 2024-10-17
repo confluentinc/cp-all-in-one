@@ -33,7 +33,7 @@ sleep 60
 assign_role_bindings
 
 # Get other CP component services
-docker compose up --no-recreate -d schema-registry connect control-center
+docker compose up --no-recreate -d schema-registry connect ksqldb-server control-center
 
 # Get prometheus and Grafana up
 docker compose up --no-recreate -d prometheus grafana
