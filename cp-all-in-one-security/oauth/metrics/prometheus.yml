@@ -8,6 +8,7 @@ scrape_configs:
           - "broker:1234"
           - "schema-registry:1235"
           - "connect:1236"
+          - "ksqldb-server:1238"
           - "control-center:1237"
         labels:
           env: "dev"
