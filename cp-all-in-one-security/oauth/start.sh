@@ -15,31 +15,32 @@ source ${DIR}/helper/functions.sh
 # Update cli permission to be executable
 update_cli_permissions
 
-# Create public/private keys for MDS
-create_certificates
-
 # Create client files to be used for produce/consume
 create_client_files
 
-# Start Keycloak and Broker instances
-docker compose up -d broker
+create_env_file
 
-# waiting for sometime to get broker fully started. If it takes more time than this
-# you may want to rerun the script.
-echo "Waiting for 60 seconds to complete the broker startup"
-sleep 60
+docker compose up -d
 
-# Assign all required role bindings.
-assign_role_bindings
+# # Start Keycloak and Broker instances
+# docker compose up -d broker
 
-# Get other CP component services
-docker compose up --no-recreate -d schema-registry connect control-center
+# # waiting for sometime to get broker fully started. If it takes more time than this
+# # you may want to rerun the script.
+# echo "Waiting for 60 seconds to complete the broker startup"
+# sleep 60
 
-# Get prometheus and Grafana up
-docker compose up --no-recreate -d prometheus grafana
+# # Assign all required role bindings.
+# assign_role_bindings
 
-# Install some connectors for demo use case
-install_connectors
+# # Get other CP component services
+# docker compose up --no-recreate -d schema-registry connect control-center
 
-# Set different user tokens and set it in current session
-set_user_tokens
+# # Get prometheus and Grafana up
+# docker compose up --no-recreate -d prometheus grafana
+
+# # Install some connectors for demo use case
+# install_connectors
+
+# # Set different user tokens and set it in current session
+# set_user_tokens

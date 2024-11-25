@@ -53,16 +53,13 @@ This will:
    
 ### Produce and Consume to Kafka using OAuth from Broker
 
-   ```bash
-   docker exec -it broker /bin/bash
-   ```
 ```shell
-   kafka-console-producer \
+   docker compose exec broker kafka-console-producer \
      --bootstrap-server broker:9095 \
      --topic test \
      --producer.config /etc/confluent/configs/client.properties
    
-   kafka-console-consumer \
+   docker compose exec broker kafka-console-consumer \
      --bootstrap-server broker:9095 \
      --topic test \
      --consumer.config /etc/confluent/configs/client.properties
