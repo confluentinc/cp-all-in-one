@@ -1,5 +1,4 @@
 ---
-version: '2'
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.5
@@ -21,7 +20,6 @@ services:
       - "8080:8080"
     volumes:
       - ./templates/realm-export.json:/opt/keycloak/data/import/realm-export.json
-
 
   broker:
     image: ${DOCKER_REGISTRY}confluentinc/cp-server:${CONFLUENT_DOCKER_TAG:-latest}
@@ -90,7 +88,6 @@ services:
       KAFKA_LISTENER_NAME_EXTERNAL_PRINCIPAL_BUILDER_CLASS: io.confluent.kafka.security.authenticator.OAuthKafkaPrincipalBuilder
       KAFKA_LISTENER_NAME_CONTROLLER_PRINCIPAL_BUILDER_CLASS: io.confluent.kafka.security.authenticator.OAuthKafkaPrincipalBuilder
       KAFKA_CONFLUENT_OAUTH_GROUPS_CLAIM_NAME: $GROUP_CLAIM_NAME
-
 
       # Configure Confluent Server Authorizer
       KAFKA_AUTHORIZER_CLASS_NAME: io.confluent.kafka.security.authorizer.ConfluentServerAuthorizer
@@ -275,7 +272,6 @@ services:
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
-      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
       CLASSPATH: "/usr/share/java/monitoring-interceptors/*"
 
       # Connect Worker

@@ -2,4 +2,10 @@
   
 # Documentation
 
-You can find the documentation and instructions for this repo at [https://docs.confluent.io/platform/current/tutorials/build-your-own-demos.html](https://docs.confluent.io/platform/current/tutorials/build-your-own-demos.html?utm_source=github&utm_medium=demo&utm_campaign=ch.examples_type.community_content.cp-all-in-one)
+This Docker Compose example includes the Confluent Community License version of Confluent Platform. It runsa Kafka broker, Schema Registry, a Kafka Connect worker with the Datagen Source connector plugin installed, Confluent Control Center,
+REST Proxy, ksqlDB, and Flink.
+
+## Flink
+
+The Flink Job Manager is available at [http://localhost:9081](http://localhost:9081)  
+Launch the Flink SQL CLI by executing `docker exec -it flink-sql-client sql-client.sh` from the command line.
