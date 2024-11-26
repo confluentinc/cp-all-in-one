@@ -2,4 +2,4 @@
   
 # Documentation
 
-You can find the documentation and instructions for this repo at [https://docs.confluent.io/platform/current/tutorials/build-your-own-demos.html](https://docs.confluent.io/platform/current/tutorials/build-your-own-demos.html?utm_source=github&utm_medium=demo&utm_campaign=ch.examples_type.community_content.cp-all-in-one)
+This example is deprecated. Refer to [cp-all-in-one](../cp-all-in-one/README.md), which is based on KRaft.
