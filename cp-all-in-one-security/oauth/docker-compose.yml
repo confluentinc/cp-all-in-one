@@ -108,7 +108,6 @@ services:
       KAFKA_LISTENER_NAME_CONTROLLER_PRINCIPAL_BUILDER_CLASS: io.confluent.kafka.security.authenticator.OAuthKafkaPrincipalBuilder
       KAFKA_CONFLUENT_OAUTH_GROUPS_CLAIM_NAME: $GROUP_CLAIM_NAME
 
-
       # Configure Confluent Server Authorizer
       KAFKA_AUTHORIZER_CLASS_NAME: io.confluent.kafka.security.authorizer.ConfluentServerAuthorizer
       KAFKA_CONFLUENT_AUTHORIZER_ACCESS_RULE_PROVIDERS: CONFLUENT,KRAFT_ACL
@@ -327,7 +326,6 @@ services:
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
-      CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
       CLASSPATH: "/usr/share/java/monitoring-interceptors/*"
 
       # Connect Worker
