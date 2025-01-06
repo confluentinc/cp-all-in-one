@@ -9,6 +9,10 @@ Platform's OAuth support.
 This creates a Confluent Platform setup (without ksqlDB) with users configured in the Keycloak identity provider (IDP).
 
 ## Getting Started
+
+### Prerequisites
+* [`jq`](https://github.com/jqlang/jq/wiki/Installation), which is used to process JSON responses throughout this example
+
 ### Update the local DNS
 **_NOTE:_**
 Add the container names in your local DNS for ease of usages of commands described in this document.
@@ -23,6 +27,7 @@ Add these lines at the end of the file:
 127.0.0.1       broker
 127.0.0.1       schema-registry
 127.0.0.1       connect
+127.0.0.1       ksqldb-server
 127.0.0.1       control-center
 ```
 Save the file and close it.
@@ -45,9 +50,9 @@ This will:
 2. Run Confluent Server with Role-based access control (RBAC).
 3. Create a new listener `EXTERNAL` for SASL/OAuthBearer in Confluent Server.
 4. Configure Confluent Server to connect to local Keycloak identity provider.
-5. Configure Schema Registry, Connect and Control Center to authenticate via OAuth.
+5. Configure Schema Registry, Connect, ksqlDB and Control Center to authenticate via OAuth.
 6. Datagen source connector plugin is added in Connect.
-7. Configure Control Center to talk to MDS, Schema Registry and Connect.
+7. Configure Control Center to talk to MDS, Schema Registry, ksqlDB and Connect.
 8. Configure Prometheus and Grafana for metrics visualization
 9. Adds some access tokens to environment variable. These will be valid for 1 hour, after which the token access commands need to be run again.
    
@@ -193,6 +198,90 @@ Struct{registertime=1491524107119,userid=User_3,regionid=Region_3,gender=MALE}
 Struct{registertime=1492050173164,userid=User_6,regionid=Region_9,gender=MALE}
 Struct{registertime=1508229967208,userid=User_8,regionid=Region_3,gender=MALE}
 ```
+
+### ksqlDB RBAC using OAuth
+All the endpoints are accessible using OAuth token
+
+<details open>
+  <summary>Get Client App access token</summary> 
+
+```shell
+export KSQL_ACCESS_TOKEN=$(curl -s \
+   -d "client_id=ksql_client_app" \
+   -d "client_secret=ksql_client_app_secret" \
+   -d "grant_type=client_credentials" \
+   http://keycloak:8080/realms/cp/protocol/openid-connect/token | jq -r .access_token)
+```
+</details>
+
+#### Ensure token is valid and the ksqlDB service is running fine
+
+```
+curl --http1.1 \
+     -X "GET" "http://ksqldb-server:8088/info" \
+     -H "Accept: application/vnd.ksql.v1+json" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer $KSQL_ACCESS_TOKEN" | jq
+```
+The output should include the `KsqlServerInfo` object, which should include the version, Kafka cluster ID, ksql service ID, and server status. For example:
+
+```
+{
+  "KsqlServerInfo": {
+    "version": "7.8.0-0",
+    "kafkaClusterId": "vHCgQyIrRHG8Jv27qI2h3Q",
+    "ksqlServiceId": "ksql-cluster",
+    "serverStatus": "RUNNING"
+  }
+}
+```
+
+#### Execute ksqlDB commands
+
+1. Creating a stream
+```
+curl --http1.1 \
+     -X "POST" "http://ksqldb-server:8088/ksql" \
+     -H "Accept: application/vnd.ksql.v1+json" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer $KSQL_ACCESS_TOKEN" \
+     -d $'{
+  "ksql": "CREATE STREAM ABC (ORDER_ID BIGINT, PRODUCT_ID STRING, USER_ID STRING) WITH (KAFKA_TOPIC='\''orders'\'', KEY_FORMAT='\''KAFKA'\'', PARTITIONS=2, VALUE_FORMAT='\''JSON'\'');",
+  "streamsProperties": {}
+}' | jq
+```
+The JSON output should include the `ABC` stream
+
+2. Executing `LIST STREAMS;`
+```
+curl --http1.1 \
+     -X "POST" "http://ksqldb-server:8088/ksql" \
+     -H "Accept: application/vnd.ksql.v1+json" \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer $KSQL_ACCESS_TOKEN" \
+     -d $'{
+  "ksql": "LIST STREAMS;",
+  "streamsProperties": {}
+}' | jq
+```
+The JSON output should list all the streams, the `KSQL_PROCESSING_LOG` and `ABC` streams in this case.
+
+3. Executing a Query
+
+```
+curl --http1.1 \
+  -X "POST" "http://ksqldb-server:8088/query" \
+  -H "Accept: application/vnd.ksql.v1+json" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $KSQL_ACCESS_TOKEN" \
+  -d $'{
+    "ksql": "SELECT * FROM ABC;",
+    "streamsProperties": {}
+}' | jq
+```
+The JSON output should include the message `Query Completed`.
+
+
 ### SSO login in C3
 You can use any user defined in the IDP to do interactive login to Confluent Control Center. Users part of group "g1" would get a permission of superuser.
 In Keycloak you can use below configured users.  
