@@ -442,6 +442,8 @@ services:
     depends_on:
       broker:
         condition: service_healthy
+      init_permissions:
+        condition: service_completed_successfully
     volumes:
       - ./keypair:/tmp/conf
     ports:
