@@ -6,11 +6,6 @@ services:
     container_name: keycloak
     command: ["start-dev", "--health-enabled=true", "--import-realm"]
     healthcheck:
-      #test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/health/live']
-      #start_period: 10s
-      #interval: 10s
-      #retries: 3
-      #timeout: 5s
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080; echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost:8080\r\nConnection: close\r\n\r\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1"]
       interval: 30s
       timeout: 10s
@@ -26,13 +21,12 @@ services:
       - ./templates/realm-export.json:/opt/keycloak/data/import/realm-export.json
 
   init_certificates:
-  # Just use the cp-server image as it has the openssl command
-    image: ${DOCKER_REGISTRY}confluentinc/cp-server:${CONFLUENT_DOCKER_TAG:-latest}
+    image: alpine/openssl
     container_name: init_certificates
     volumes:
       - ./helper/init_certificates.sh:/usr/bin/init_certificates.sh
       - ./keypair:/data
-    entrypoint: /bin/bash
+    entrypoint: /bin/sh
     command: "/usr/bin/init_certificates.sh"
     deploy: 
       restart_policy: 
@@ -61,8 +55,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092,INTERNAL://localhost:9093,EXTERNAL://broker:9095
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092,INTERNAL://localhost:9093,EXTERNAL://broker:9095
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092,INTERNAL://broker:9093,EXTERNAL://broker:9095
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://broker:9092,INTERNAL://broker:9093,EXTERNAL://broker:9095
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
@@ -511,6 +505,7 @@ services:
 
       # HTTP and HTTPS to Control Center UI 
       CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_LISTENERS: http://0.0.0.0:9021
+      CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_ADVERTISED_URL: http://control-center:9021
 
       # Connect
       CONTROL_CENTER_CONNECT_CONNECT1_CLUSTER: http://connect:8083
