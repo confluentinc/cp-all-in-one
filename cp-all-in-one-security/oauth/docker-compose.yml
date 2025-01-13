@@ -198,6 +198,7 @@ services:
       SR_CLIENT_ID: ${SR_CLIENT_ID}
       CONNECT_CLIENT_ID: ${CONNECT_CLIENT_ID}
       CONNECT_SECRET_PROTECTION_CLIENT_ID: ${CONNECT_SECRET_PROTECTION_CLIENT_ID}
+      KSQL_CLIENT_ID: ${KSQL_CLIENT_ID}
       C3_CLIENT_ID: ${C3_CLIENT_ID}
       CLIENT_APP_ID: ${CLIENT_APP_ID}
       IDP_TOKEN_ENDPOINT: ${IDP_TOKEN_ENDPOINT}
@@ -498,6 +499,9 @@ services:
       KSQL_KSQL_SCHEMA_REGISTRY_BEARER_AUTH_ISSUER_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       KSQL_KSQL_SCHEMA_REGISTRY_BEARER_AUTH_CLIENT_ID: $KSQL_CLIENT_ID
       KSQL_KSQL_SCHEMA_REGISTRY_BEARER_AUTH_CLIENT_SECRET: $KSQL_CLIENT_SECRET
+      # Workaround for broken permission endpoint check in ksqldb
+      KSQL_KSQL_SECURITY_EXTENSION_SR___PERMISSIONS_VALIDATOR_ENABLED: false
+      # ksql.security.extension.sr-permissions.validator.enabled=false
 
       # Enable OAuth for ksqlDB's embedded Kafka clients that access and manage consumer groups and topics
       KSQL_SASL_MECHANISM: 'OAUTHBEARER'

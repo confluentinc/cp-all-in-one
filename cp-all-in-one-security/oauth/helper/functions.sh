@@ -206,4 +206,6 @@ create_env_file() {
     echo SSO_SUPER_USER_GROUP=$SSO_SUPER_USER_GROUP >> .env
     echo SSO_USER_GROUP=$SSO_USER_GROUP >> .env
 
+    echo KSQL_CLIENT_ID=$KSQL_CLIENT_ID >> .env
+    echo KSQL_CLIENT_SECRET=$KSQL_CLIENT_SECRET >> .env
 }
