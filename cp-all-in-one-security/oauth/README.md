@@ -74,6 +74,12 @@ This will:
 7. Configure Control Center to talk to MDS, Schema Registry, ksqlDB and Connect.
 8. Configure Prometheus and Grafana for metrics visualization
 9. Adds some access tokens to environment variable. These will be valid for 1 hour, after which the token access commands need to be run again.
+
+If you need access tokens for the vaious service users for testing, please have a look at the `helper/set_user_tokens.sh`. It will acquire tokens for you. Just source it:
+
+```shell
+source helper/set_user_tokens.sh
+```
    
 ### Produce and Consume to Kafka using OAuth from Broker
 
