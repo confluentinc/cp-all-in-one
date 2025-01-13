@@ -271,7 +271,6 @@ services:
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: $SR_CLIENT_SECRET
 
   connect:
-    #image: ${DOCKER_REGISTRY}confluentinc/cp-server-connect:${CONFLUENT_DOCKER_TAG:-latest}
     container_name: connect
     hostname: connect
     build:
