@@ -6,11 +6,10 @@ services:
     container_name: keycloak
     command: ["start-dev", "--health-enabled=true", "--import-realm"]
     healthcheck:
-      test: ['CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/health/live']
-      start_period: 10s
-      interval: 10s
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080; echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost:8080\r\nConnection: close\r\n\r\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1"]
+      interval: 30s
+      timeout: 10s
       retries: 3
-      timeout: 5s
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
@@ -21,6 +20,18 @@ services:
     volumes:
       - ./templates/realm-export.json:/opt/keycloak/data/import/realm-export.json
 
+  init_certificates:
+    image: alpine/openssl
+    container_name: init_certificates
+    volumes:
+      - ./helper/init_certificates.sh:/usr/bin/init_certificates.sh
+      - ./keypair:/data
+    entrypoint: /bin/sh
+    command: "/usr/bin/init_certificates.sh"
+    deploy: 
+      restart_policy: 
+        condition: none
+
   broker:
     image: ${DOCKER_REGISTRY}confluentinc/cp-server:${CONFLUENT_DOCKER_TAG:-latest}
     hostname: broker
@@ -28,6 +39,8 @@ services:
     depends_on:
       keycloak:
         condition: service_healthy
+      init_certificates:
+        condition: service_completed_successfully
     healthcheck:
       test: curl -fail --silent --insecure http://broker:8091/v1/metadata/id || exit 1
       interval: 10s
@@ -42,8 +55,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:SASL_PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,INTERNAL:SASL_PLAINTEXT,EXTERNAL:SASL_PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092,INTERNAL://localhost:9093,EXTERNAL://broker:9095
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092,INTERNAL://localhost:9093,EXTERNAL://broker:9095
+      KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092,INTERNAL://broker:9093,EXTERNAL://broker:9095
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://broker:9092,INTERNAL://broker:9093,EXTERNAL://broker:9095
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
@@ -103,9 +116,9 @@ services:
       KAFKA_CONFLUENT_METADATA_SERVER_USER_STORE: OAUTH
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_JWKS_ENDPOINT_URL: ${IDP_JWKS_ENDPOINT}
       KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_ISSUER: ${IDP_EXPECTED_ISSUER}
-      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_AUDIENCE: $EXPECTED_AUDIENCE
-      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_SUB_CLAIM_NAME: $SUB_CLAIM_NAME
-      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_GROUPS_CLAIM_NAME: $GROUP_CLAIM_NAME
+      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_EXPECTED_AUDIENCE: ${EXPECTED_AUDIENCE}
+      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_SUB_CLAIM_NAME: ${SUB_CLAIM_NAME}
+      KAFKA_CONFLUENT_METADATA_SERVER_OAUTHBEARER_GROUPS_CLAIM_NAME: ${GROUP_CLAIM_NAME}
 
       # EmbeddedKafkaRest: Kafka Client Configuration
       KAFKA_KAFKA_REST_BOOTSTRAP_SERVERS: SASL_PLAINTEXT://broker:9095
@@ -116,7 +129,7 @@ services:
       KAFKA_KAFKA_REST_REST_SERVLET_INITIALIZOR_CLASSES: io.confluent.common.security.jetty.initializer.AuthenticationHandler
       KAFKA_KAFKA_REST_OAUTHBEARER_JWKS_ENDPOINT_URL: ${IDP_JWKS_ENDPOINT}
       KAFKA_KAFKA_REST_OAUTHBEARER_EXPECTED_ISSUER: ${IDP_EXPECTED_ISSUER}
-      KAFKA_KAFKA_REST_OAUTHBEARER_EXPECTED_AUDIENCE: $EXPECTED_AUDIENCE
+      KAFKA_KAFKA_REST_OAUTHBEARER_EXPECTED_AUDIENCE: ${EXPECTED_AUDIENCE}
       KAFKA_KAFKA_REST_OAUTHBEARER_SUB_CLAIM_NAME: ${SUB_CLAIM_NAME}
       KAFKA_KAFKA_REST_OAUTHBEARER_GROUPS_CLAIM_NAME: ${GROUP_CLAIM_NAME}
       KAFKA_KAFKA_REST_PUBLIC_KEY_PATH: /tmp/conf/public.pem
@@ -138,7 +151,7 @@ services:
       KAFKA_CONFLUENT_OIDC_IDP_TOKEN_BASE_ENDPOINT_URI: ${IDP_TOKEN_ENDPOINT}
       KAFKA_CONFLUENT_OIDC_IDP_CLIENT_ID: ${SSO_CLIENT_ID}
       KAFKA_CONFLUENT_OIDC_IDP_CLIENT_SECRET: ${SSO_CLIENT_SECRET}
-      KAFKA_CONFLUENT_OIDC_IDP_DEVICE_AUTHORIZATION_ENDPOINT_URI: $IDP_DEVICE_AUTH_ENDPOINT
+      KAFKA_CONFLUENT_OIDC_IDP_DEVICE_AUTHORIZATION_ENDPOINT_URI: ${IDP_DEVICE_AUTH_ENDPOINT}
       KAFKA_CONFLUENT_OIDC_IDP_SUB_CLAIM_NAME: ${SUB_CLAIM_NAME}
       KAFKA_CONFLUENT_OIDC_IDP_GROUPS_CLAIM_NAME: ${GROUP_CLAIM_NAME}
       KAFKA_CONFLUENT_OIDC_IDP_REFRESH_TOKEN_ENABLED: 'true'
@@ -167,6 +180,34 @@ services:
 
     command: "bash -c 'if [ ! -f /tmp/conf/keypair.pem ]; then echo \"ERROR: Did you forget the create-certificates.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /etc/confluent/docker/run ; fi'"
 
+  init_permissions:
+  # Just use the cp-server image as it has the curl command
+    image: ${DOCKER_REGISTRY}confluentinc/cp-server:${CONFLUENT_DOCKER_TAG:-latest}
+    container_name: init_permissions
+    depends_on:
+      broker:
+        condition: service_healthy
+    volumes:
+      - ./helper/init_permissions.sh:/usr/bin/init_permissions.sh
+      - ./keypair:/data
+      - ./mount:/etc/confluent/configs
+    environment:
+      SUPERUSER_CLIENT_ID: ${SUPERUSER_CLIENT_ID}
+      SUPERUSER_CLIENT_SECRET: ${SUPERUSER_CLIENT_SECRET}
+      SSO_SUPER_USER_GROUP: ${SSO_SUPER_USER_GROUP}
+      SR_CLIENT_ID: ${SR_CLIENT_ID}
+      CONNECT_CLIENT_ID: ${CONNECT_CLIENT_ID}
+      CONNECT_SECRET_PROTECTION_CLIENT_ID: ${CONNECT_SECRET_PROTECTION_CLIENT_ID}
+      KSQL_CLIENT_ID: ${KSQL_CLIENT_ID}
+      C3_CLIENT_ID: ${C3_CLIENT_ID}
+      CLIENT_APP_ID: ${CLIENT_APP_ID}
+      IDP_TOKEN_ENDPOINT: ${IDP_TOKEN_ENDPOINT}
+    entrypoint: /bin/bash
+    command: "/usr/bin/init_permissions.sh"
+    deploy: 
+      restart_policy: 
+        condition: none
+
   schema-registry:
     image: ${DOCKER_REGISTRY}confluentinc/cp-schema-registry:${CONFLUENT_DOCKER_TAG:-latest}
     hostname: schema-registry
@@ -174,6 +215,8 @@ services:
     depends_on:
       broker:
         condition: service_healthy
+      init_permissions:
+        condition: service_completed_successfully
     ports:
       - "8081:8081"
       - "1235:1235"
@@ -228,9 +271,12 @@ services:
       SCHEMA_REGISTRY_CONFLUENT_METADATA_OAUTHBEARER_LOGIN_CLIENT_SECRET: $SR_CLIENT_SECRET
 
   connect:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-server-connect:${CONFLUENT_DOCKER_TAG:-latest}
     container_name: connect
     hostname: connect
+    build:
+      context: .
+      args:
+        CONFLUENT_DOCKER_TAG: ${CONFLUENT_DOCKER_TAG}
 #    restart: always
     # healthcheck:
     #   interval: 10s
@@ -239,6 +285,8 @@ services:
     depends_on:
       broker:
         condition: service_healthy
+      init_permissions:
+        condition: service_completed_successfully
     volumes:
       - ./keypair:/tmp/conf
       - ./bin/confluent:/usr/bin/confluent
@@ -394,6 +442,8 @@ services:
     depends_on:
       broker:
         condition: service_healthy
+      init_permissions:
+        condition: service_completed_successfully
     volumes:
       - ./keypair:/tmp/conf
     ports:
@@ -448,6 +498,9 @@ services:
       KSQL_KSQL_SCHEMA_REGISTRY_BEARER_AUTH_ISSUER_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       KSQL_KSQL_SCHEMA_REGISTRY_BEARER_AUTH_CLIENT_ID: $KSQL_CLIENT_ID
       KSQL_KSQL_SCHEMA_REGISTRY_BEARER_AUTH_CLIENT_SECRET: $KSQL_CLIENT_SECRET
+      # Workaround for broken permission endpoint check in ksqldb
+      KSQL_KSQL_SECURITY_EXTENSION_SR___PERMISSIONS_VALIDATOR_ENABLED: false
+      # ksql.security.extension.sr-permissions.validator.enabled=false
 
       # Enable OAuth for ksqlDB's embedded Kafka clients that access and manage consumer groups and topics
       KSQL_SASL_MECHANISM: 'OAUTHBEARER'
@@ -483,6 +536,8 @@ services:
     depends_on:
       broker:
         condition: service_healthy
+      init_permissions:
+        condition: service_completed_successfully
     volumes:
       - ./keypair:/tmp/conf
       - ./mount:/etc/confluent/configs
@@ -539,6 +594,7 @@ services:
 
       # HTTP and HTTPS to Control Center UI 
       CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_LISTENERS: http://0.0.0.0:9021
+      CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_ADVERTISED_URL: http://control-center:9021
 
       # Connect
       CONTROL_CENTER_CONNECT_CONNECT1_CLUSTER: http://connect:8083

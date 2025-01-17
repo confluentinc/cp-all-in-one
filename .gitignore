@@ -9,3 +9,5 @@ img_data
 **/ccloud_library.sh
 *.tar.gz
 log.*
+.env
+keypair

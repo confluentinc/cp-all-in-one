@@ -11,6 +11,7 @@ This creates a Confluent Platform setup (without ksqlDB) with users configured i
 ## Getting Started
 
 ### Prerequisites
+
 * [`jq`](https://github.com/jqlang/jq/wiki/Installation), which is used to process JSON responses throughout this example
 
 ### Update the local DNS
@@ -18,10 +19,13 @@ This creates a Confluent Platform setup (without ksqlDB) with users configured i
 Add the container names in your local DNS for ease of usages of commands described in this document.
 
 Edit the `/etc/hosts` file which will require elevated privileges. E.g., to edit with `vi` on a `sudo`-enabled system:
+
 ```shell
 sudo vi /etc/hosts
 ``` 
+
 Add these lines at the end of the file:
+
 ```shell
 127.0.0.1       keycloak
 127.0.0.1       broker
@@ -30,16 +34,31 @@ Add these lines at the end of the file:
 127.0.0.1       ksqldb-server
 127.0.0.1       control-center
 ```
+
+If you are using IPv6, you might need to add these additional lines:
+
+```shell
+::1       keycloak
+::1       broker
+::1       schema-registry
+::1       connect
+::1       ksqldb-server
+::1       control-center
+```
+
 Save the file and close it.
 
 ### Start the environment
+
 To initialise the environment, use the provided start script:
-```bash
+
+```shell
 ./start.sh
 ```
 
 If you want to run the local Confluent Platform cluster with Okta serving as the identity provider, you can use the below command.
 Please note, you need to create a file `/helper/idp_config-okta.sh` with the Okta configurations.
+
 ```shell
 ./start.sh okta
 ```
@@ -55,19 +74,22 @@ This will:
 7. Configure Control Center to talk to MDS, Schema Registry, ksqlDB and Connect.
 8. Configure Prometheus and Grafana for metrics visualization
 9. Adds some access tokens to environment variable. These will be valid for 1 hour, after which the token access commands need to be run again.
+
+If you need access tokens for the vaious service users for testing, please have a look at the `helper/set_user_tokens.sh`. It will acquire tokens for you. Just source it:
+
+```shell
+source helper/set_user_tokens.sh
+```
    
 ### Produce and Consume to Kafka using OAuth from Broker
 
-   ```bash
-   docker exec -it broker /bin/bash
-   ```
 ```shell
-   kafka-console-producer \
+   docker compose exec broker kafka-console-producer \
      --bootstrap-server broker:9095 \
      --topic test \
      --producer.config /etc/confluent/configs/client.properties
    
-   kafka-console-consumer \
+   docker compose exec broker kafka-console-consumer \
      --bootstrap-server broker:9095 \
      --topic test \
      --consumer.config /etc/confluent/configs/client.properties
@@ -118,12 +140,13 @@ docker exec -it schema-registry /bin/bash
 ```
 
 Here we are:
-- Passing Schema Registry client OAuth configs using bearer prefix.
-- Passing Kafka client related configs using `producer.config`.
+
+* Passing Schema Registry client OAuth configs using bearer prefix.
+* Passing Kafka client related configs using `producer.config`.
 
 The producer will wait at the command prompt for data to be supplied. You can provide JSON strings in separate lines
-    
-   ```
+
+   ```json
    {"id": "1", "amount": 101}
    {"id": "2", "amount": 102}
    ```
@@ -215,20 +238,22 @@ export KSQL_ACCESS_TOKEN=$(curl -s \
    -d "grant_type=client_credentials" \
    http://keycloak:8080/realms/cp/protocol/openid-connect/token | jq -r .access_token)
 ```
+
 </details>
 
 #### Ensure token is valid and the ksqlDB service is running fine
 
-```
+```shell
 curl --http1.1 \
      -X "GET" "http://ksqldb-server:8088/info" \
      -H "Accept: application/vnd.ksql.v1+json" \
      -H "Content-Type: application/json" \
      -H "Authorization: Bearer $KSQL_ACCESS_TOKEN" | jq
 ```
+
 The output should include the `KsqlServerInfo` object, which should include the version, Kafka cluster ID, ksql service ID, and server status. For example:
 
-```
+```shell
 {
   "KsqlServerInfo": {
     "version": "7.8.0-0",
@@ -242,7 +267,8 @@ The output should include the `KsqlServerInfo` object, which should include the 
 #### Execute ksqlDB commands
 
 1. Creating a stream
-```
+
+```shell
 curl --http1.1 \
      -X "POST" "http://ksqldb-server:8088/ksql" \
      -H "Accept: application/vnd.ksql.v1+json" \
@@ -253,10 +279,12 @@ curl --http1.1 \
   "streamsProperties": {}
 }' | jq
 ```
+
 The JSON output should include the `ABC` stream
 
 2. Executing `LIST STREAMS;`
-```
+
+```shell
 curl --http1.1 \
      -X "POST" "http://ksqldb-server:8088/ksql" \
      -H "Accept: application/vnd.ksql.v1+json" \
@@ -271,7 +299,7 @@ The JSON output should list all the streams, the `KSQL_PROCESSING_LOG` and `ABC`
 
 3. Executing a Query
 
-```
+```shell
 curl --http1.1 \
   -X "POST" "http://ksqldb-server:8088/query" \
   -H "Accept: application/vnd.ksql.v1+json" \
@@ -282,16 +310,19 @@ curl --http1.1 \
     "streamsProperties": {}
 }' | jq
 ```
+
 The JSON output should include the message `Query Completed`.
 
 
 ### SSO login in C3
 You can use any user defined in the IDP to do interactive login to Confluent Control Center. Users part of group "g1" would get a permission of superuser.
 In Keycloak you can use below configured users.  
+
 ```shell
 c3user:c3user
 c3superuser:c3superuser
 ```
+
 `c3superuser` is a superuser who can assign role bindings to other users
 `c3user` doesn't have any role bindings. This user can authenticate with IDP but will not have access to any cluster by default. The idea is to demo onboarding experience for a user or group.
 
@@ -319,6 +350,16 @@ You can try to login by specifying your MDS URL for CP cluster
 $PATH_TO_CLI_BINARY/confluent login --url http://localhost:8091
 ```
 
+If you need to logout completely for testing, you need to logout from the `cp` realm in keycloak by pointing your browser to `http://keycloak:8080/realms/cp/account/` and pressing `Sign Out`.
+
+#### Firefox: Special settings for testing SSO via SOCKS proxy
+
+Firefox needs some special settings in `about:config` if you run your demo on a separate machine (e.g. a virtual machine) and use a SOCKS proxy (e.g. via SSH dynamic port forwarding) to connect to the resources from your developer machine.
+Setting the following values makes sure that the secure cookies used by Confluent Control Center and Keycloak can be used as intended:
+
+* `network.proxy.allow_hijacking_localhost`: `true` (this allows connections to `localhost` to be be forwarded through the SOCKS proxy)
+* `network.proxy.testing_localhost_is_secure_when_hijacked`: `true` (this makes sure firefox considers these forwarded connections `secure`, otherwise secure cookies will not be accepted for host such as `keycloak` even if these point to a local IP such as 127.0.0.1)
+
 ### Visualize metrics with Prometheus and Grafana
 
 This setup includes Prometheus and Grafana to visualize metrics.
@@ -326,27 +367,43 @@ Grafana can be accessed via http://localhost:3000 using the `admin:admin` creden
 From menu select "Authentication Dashboard"
 JMX exporter configs are present [here](./metrics/exporter.yml), which can tweaked as per your liking.
 
-### Troubleshooting 
+### Troubleshooting
+
 * At times, the broker takes more than expected time (60 seconds) to completely start. If it fails, please re-run the startup scrip. The steps are idempotent, and not going to do any disruptive change.
 When done playing around shut down the containers
 
 * Get the logs of a service
+
 ```shell 
 broker logs -f <container name>
 ```
 
 * Remove a single container. This will remove container and all logs. This will not delete the cached image
+
 ```shell
  docker rm $(docker stop broker)
 
 ```
-*  Remove all containers
+
+* Remove all containers
+
 ```shell
  docker rm $(docker stop $(docker ps -aq))
 
 ```
+
 ### Bring Down the Cluster
+
+You can use the provided shell script to bring down the cluster and delete the temporary resources (e.g. SSL certificates)
+
+```shell
+./stop.sh
+```
+
+You can also use `docker compose` directly (which leave the temp files in place):
+
 ```shell
  docker compose down
 ```
+
 As a final step, if you are not going to use this example any time soon, you can remove the entries from `/etc/hosts`.
