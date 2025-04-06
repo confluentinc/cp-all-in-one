@@ -1,4 +1,4 @@
----
+cp-all-in-one/docker-compose.yml-
 services:
 
   broker:
