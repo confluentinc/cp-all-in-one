@@ -513,6 +513,7 @@ services:
         clientSecret="$KSQL_CLIENT_SECRET";   
 
       # Confluent Monitoring Interceptors for Control Center streams monitoring
+      KSQL_CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-7.8.0.jar
       KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
       KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SECURITY_PROTOCOL: SASL_PLAINTEXT
