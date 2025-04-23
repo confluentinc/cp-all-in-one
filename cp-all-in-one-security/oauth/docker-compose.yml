@@ -236,7 +236,7 @@ services:
 
       SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
       SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: SASL_PLAINTEXT
-      SCHEMA_REGISTRY_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       SCHEMA_REGISTRY_KAFKASTORE_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -336,7 +336,7 @@ services:
 
       # RBAC
       CONNECT_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONNECT_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -348,9 +348,9 @@ services:
 
       # Producer
       CONNECT_PRODUCER_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_PRODUCER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_PRODUCER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -359,9 +359,9 @@ services:
 
       # Consumer
       CONNECT_CONSUMER_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_CONSUMER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_CONSUMER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
 
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: |
@@ -372,7 +372,7 @@ services:
       # Default admin config
       CONNECT_ADMIN_SECURITY_PROTOCOL: SASL_PLAINTEXT
       CONNECT_ADMIN_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_ADMIN_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_ADMIN_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_ADMIN_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONNECT_ADMIN_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -420,7 +420,7 @@ services:
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEYSTORE_PASSWORD: confluent
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEY_PASSWORD: confluent
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_JAAS_CONFIG: |
              org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -505,7 +505,7 @@ services:
       # Enable OAuth for ksqlDB's embedded Kafka clients that access and manage consumer groups and topics
       KSQL_SASL_MECHANISM: 'OAUTHBEARER'
       KSQL_SECURITY_PROTOCOL: SASL_PLAINTEXT
-      KSQL_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      KSQL_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       KSQL_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       KSQL_SASL_JAAS_CONFIG: |
         org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -517,7 +517,7 @@ services:
       KSQL_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
       KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SECURITY_PROTOCOL: SASL_PLAINTEXT
       KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: OAUTHBEARER
-      KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+      KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler
       KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       KSQL_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: |
         org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -567,7 +567,7 @@ services:
       # Control Center uses Kafka Streams to process metrics
       CONTROL_CENTER_STREAMS_SECURITY_PROTOCOL: SASL_PLAINTEXT
       CONTROL_CENTER_STREAMS_SASL_MECHANISM: OAUTHBEARER
-      CONTROL_CENTER_STREAMS_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+      CONTROL_CENTER_STREAMS_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler
       CONTROL_CENTER_STREAMS_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONTROL_CENTER_STREAMS_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -578,7 +578,7 @@ services:
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
       CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
-      CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler
       CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_JASS_CONFIG: |
         org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
         clientId="$C3_CLIENT_ID" \
