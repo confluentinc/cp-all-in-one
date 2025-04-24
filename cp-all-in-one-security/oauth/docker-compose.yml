@@ -69,6 +69,7 @@ services:
       KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=INFO,io.confluent.rest-utils=INFO,io.confluent.rbacapi=INFO,io.confluent.tokenapi=INFO,io.confluent.security.auth=INFO,io.confluent.security.store=INFO,io.confluent.common.security.jetty=INFO"
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN, OAUTHBEARER
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
 
       KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: |
@@ -233,6 +234,7 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:9095'
       SCHEMA_REGISTRY_GROUP_ID: schema-registry-demo
+      SCHEMA_REGISTRY_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
 
       SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
       SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: SASL_PLAINTEXT
@@ -304,6 +306,7 @@ services:
       CONNECT_GROUP_ID: "connect-cluster"
       CONNECT_PRODUCER_CLIENT_ID: "connect-worker-producer"
       CONNECT_PRODUCER_ENABLE_IDEMPOTENCE: 'true'
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
 
       CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
       CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
@@ -450,7 +453,7 @@ services:
       - "8088:8088"
       - "1238:1238"
     environment:
-      KSQL_OPTS: '-Dconfluent.support.metrics.enable=false'
+      KSQL_OPTS: '-Dconfluent.support.metrics.enable=false -Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
       CUB_CLASSPATH: '/usr/share/java/confluent-security/ksql/*:/usr/share/java/ksqldb-server/*:/usr/share/java/cp-base-new/*'
 
       KSQL_LOG4J_ROOT_LOGLEVEL: INFO
@@ -551,6 +554,7 @@ services:
     environment:
       CUB_CLASSPATH: '/usr/share/java/confluent-control-center/*:/usr/share/java/rest-utils/*:/usr/share/java/confluent-common/*:/usr/share/java/confluent-security/kafka-rest/*:/usr/share/java/kafka-rest/:/usr/share/java/cp-base-new/*'
       EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1237:/usr/bin/jmx/exporter.yml"
+      CONTROL_CENTER_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
 
       # If using Confluent Health+ for monitoring and alerting, uncomment the line below to run in management mode.
       # CONTROL_CENTER_MODE_ENABLE: "management"
