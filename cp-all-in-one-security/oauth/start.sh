@@ -18,6 +18,6 @@ update_cli_permissions
 # Create client files to be used for produce/consume
 create_client_files
 
-create_env_file
+#create_env_file
 
 docker compose up -d
