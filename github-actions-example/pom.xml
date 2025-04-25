@@ -18,7 +18,7 @@
         <schemaRegistryUrl></schemaRegistryUrl>
         <schemaRegistryBasicAuthUserInfo></schemaRegistryBasicAuthUserInfo>
         <newSchema>schemas/Count.avsc</newSchema>
-        <confluent.version>8.1.0-84</confluent.version>
+        <confluent.version>8.1.0-95</confluent.version>
     </properties>
 
     <repositories>
