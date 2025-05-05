@@ -69,7 +69,7 @@ services:
       KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=INFO,io.confluent.rest-utils=INFO,io.confluent.rbacapi=INFO,io.confluent.tokenapi=INFO,io.confluent.security.auth=INFO,io.confluent.security.store=INFO,io.confluent.common.security.jetty=INFO"
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN, OAUTHBEARER
-      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
 
       KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: |
@@ -234,6 +234,7 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:9095'
       SCHEMA_REGISTRY_GROUP_ID: schema-registry-demo
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
       SCHEMA_REGISTRY_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
 
       SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
@@ -306,7 +307,7 @@ services:
       CONNECT_GROUP_ID: "connect-cluster"
       CONNECT_PRODUCER_CLIENT_ID: "connect-worker-producer"
       CONNECT_PRODUCER_ENABLE_IDEMPOTENCE: 'true'
-      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
 
       CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
       CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
@@ -453,6 +454,7 @@ services:
       - "8088:8088"
       - "1238:1238"
     environment:
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
       KSQL_OPTS: '-Dconfluent.support.metrics.enable=false -Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
       CUB_CLASSPATH: '/usr/share/java/confluent-security/ksql/*:/usr/share/java/ksqldb-server/*:/usr/share/java/cp-base-new/*'
 
@@ -554,12 +556,13 @@ services:
     environment:
       CUB_CLASSPATH: '/usr/share/java/confluent-control-center/*:/usr/share/java/rest-utils/*:/usr/share/java/confluent-common/*:/usr/share/java/confluent-security/kafka-rest/*:/usr/share/java/kafka-rest/:/usr/share/java/cp-base-new/*'
       EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1237:/usr/bin/jmx/exporter.yml"
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
       CONTROL_CENTER_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
 
       # If using Confluent Health+ for monitoring and alerting, uncomment the line below to run in management mode.
       # CONTROL_CENTER_MODE_ENABLE: "management"
       # You can now remove all Control Center "STREAMS", "MONITORING", and "METRICS" configurations
-      
+
       # general settings
       CONTROL_CENTER_BOOTSTRAP_SERVERS: EXTERNAL://broker:9095
       CONTROL_CENTER_REPLICATION_FACTOR: 1
@@ -577,7 +580,7 @@ services:
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
               clientId="$C3_CLIENT_ID" \
               clientSecret="$C3_CLIENT_SECRET";
-  
+
 
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
@@ -596,7 +599,7 @@ services:
       CONTROL_CENTER_STREAMS_CONSUMER_REQUEST_TIMEOUT_MS: "960032"
       CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 1
 
-      # HTTP and HTTPS to Control Center UI 
+      # HTTP and HTTPS to Control Center UI
       CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_LISTENERS: http://0.0.0.0:9021
       CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_ADVERTISED_URL: http://control-center:9021
 
