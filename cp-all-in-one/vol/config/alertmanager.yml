@@ -1,0 +1,15 @@
+global:
+  resolve_timeout: 1m
+  smtp_require_tls: false
+receivers:
+- name: c3-receiver-1
+  webhook_configs:
+  - url: http://localhost:9021/3.0/alertsFired
+route:
+  receiver: c3-receiver-1
+  routes:
+  - receiver: c3-receiver-1
+    matchers:
+    - rule_created_by="c3-1"
+    repeat_interval: 876000h
+    continue: true
