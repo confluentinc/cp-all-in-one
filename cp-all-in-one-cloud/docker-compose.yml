@@ -3,7 +3,7 @@ version: '2'
 services:
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:7.6.x-latest
+    image: confluentinc/cp-schema-registry:7.6.6
     hostname: schema-registry
     container_name: schema-registry
     ports:
@@ -17,7 +17,7 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: "PLAIN"
 
   ksqldb-server:
-    image: confluentinc/cp-ksqldb-server:7.6.x-latest
+    image: confluentinc/cp-ksqldb-server:7.6.6
     hostname: ksqldb-server
     container_name: ksqldb-server
     ports:
@@ -59,13 +59,13 @@ services:
       KSQL_KSQL_CONNECT_URL: "http://connect:8083"
 
   ksqldb-cli:
-    image: confluentinc/cp-ksqldb-cli:7.6.x-latest
+    image: confluentinc/cp-ksqldb-cli:7.6.6
     container_name: ksqldb-cli
     entrypoint: /bin/sh
     tty: true
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:7.6.x-latest
+    image: confluentinc/cp-enterprise-control-center:7.6.6
     hostname: control-center
     container_name: control-center
     ports:
@@ -121,7 +121,7 @@ services:
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
       CONNECT_LOG4J_LOGGERS: org.reflections=ERROR
       # CLASSPATH required due to CC-2422
-      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-7.6.2-0.jar
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-7.6.6.jar
       # Connect worker
       CONNECT_SECURITY_PROTOCOL: SASL_SSL
       CONNECT_SASL_JAAS_CONFIG: $SASL_JAAS_CONFIG
@@ -144,7 +144,7 @@ services:
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: PLAIN
 
   rest-proxy:
-    image: confluentinc/cp-kafka-rest:7.6.x-latest
+    image: confluentinc/cp-kafka-rest:7.6.6
     ports:
       - 8082:8082
     hostname: rest-proxy
