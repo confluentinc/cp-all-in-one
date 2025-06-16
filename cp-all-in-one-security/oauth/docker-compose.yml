@@ -530,7 +530,7 @@ services:
               clientSecret="$KSQL_CLIENT_SECRET";
 
   control-center:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:${CONFLUENT_DOCKER_TAG:-latest}
+    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center-next-gen:2.2.0
     hostname: control-center
     container_name: control-center
     healthcheck:
