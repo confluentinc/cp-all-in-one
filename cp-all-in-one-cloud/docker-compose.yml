@@ -63,12 +63,53 @@ services:
     entrypoint: /bin/sh
     tty: true
 
+  prometheus:
+    image: confluentinc/cp-enterprise-prometheus:2.2.0
+    hostname: cp-enterprise-prometheus
+    container_name: prometheus
+    volumes:
+      - ./vol/config:/mnt/config
+    ports:
+      - "9090:9090"
+    command: >
+      sh -c "prometheus --config.file=/mnt/config/prometheus-generated.yml
+             --storage.tsdb.path=/prometheus
+             --web.console.libraries=/etc/prometheus/console_libraries
+             --web.console.templates=/etc/prometheus/consoles
+             --web.enable-lifecycle
+             --web.config.file=/mnt/config/web-config-prom.yml
+             --web.route-prefix=/
+             --web.external-url=http://localhost:9090/
+             --storage.tsdb.retention.time=7d"
+
+  alertmanager:
+    image: confluentinc/cp-enterprise-alertmanager:2.2.0
+    hostname: cp-enterprise-alertmanager
+    container_name: alertmanager
+    depends_on:
+      - prometheus
+    volumes:
+      - ./vol/config:/mnt/config
+    ports:
+      - "9093:9093"
+    command: >
+      sh -c "alertmanager --config.file=/mnt/config/alertmanager-generated.yml
+             --web.config.file=/mnt/config/web-config-am.yml
+             --storage.path=/alertmanager
+             --web.external-url=http://localhost:9093/
+             --web.route-prefix=/"
+
   control-center:
-    image: confluentinc/cp-enterprise-control-center:8.0.0
+    image: confluentinc/cp-enterprise-control-center-next-gen:2.2.0
     hostname: control-center
     container_name: control-center
+    depends_on:
+      - prometheus
+      - alertmanager
     ports:
       - "9021:9021"
+    volumes:
+      - ./vol/config:/mnt/config
     environment:
       CONTROL_CENTER_BOOTSTRAP_SERVERS: $BOOTSTRAP_SERVERS
       CONTROL_CENTER_KSQL_KSQLDB1_URL: "http://ksqldb-server:8088"
@@ -91,6 +132,11 @@ services:
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
       # Workaround for MMA-3564
       CONTROL_CENTER_METRICS_TOPIC_MAX_MESSAGE_BYTES: 8388608
+      # Prometheus integration
+      CONTROL_CENTER_UI_PROMETHEUS_URL: "http://prometheus:9090"
+      CONTROL_CENTER_UI_PROMETHEUS_QUERY_URL: "http://localhost:9090"
+      CONTROL_CENTER_UI_ALERTMANAGER_URL: "http://alertmanager:9093"
+      CONTROL_CENTER_UI_ALERTMANAGER_QUERY_URL: "http://localhost:9093"
       PORT: 9021
 
   connect:

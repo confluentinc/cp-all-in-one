@@ -1,0 +1,8 @@
+global:
+  resolve_timeout: 1m
+  smtp_require_tls: false
+receivers:
+- name: default
+route:
+  receiver: default
+  routes: []
