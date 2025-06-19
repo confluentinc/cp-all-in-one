@@ -2,7 +2,7 @@
 services:
 
   broker:
-    image: confluentinc/cp-kafka:8.0.0
+    image: confluentinc/cp-server:8.0.0
     hostname: broker
     container_name: broker
     ports:
