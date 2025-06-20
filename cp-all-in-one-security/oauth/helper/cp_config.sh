@@ -5,13 +5,13 @@
 # over time to construct other
 # values required by this repository
 #####################################################
-export CONFLUENT=7.8.0
-export CONFLUENT_DOCKER_TAG=7.8.0
-export CONFLUENT_SHORT=7.8
-export CONFLUENT_PREVIOUS="7.7.0"
-export CONFLUENT_RELEASE_TAG_OR_BRANCH=7.8.0-post
-export CONFLUENT_MAJOR=7
-export CONFLUENT_MINOR=8
+export CONFLUENT=8.0.0
+export CONFLUENT_DOCKER_TAG=8.0.0
+export CONFLUENT_SHORT=8.0
+export CONFLUENT_PREVIOUS="7.9.0"
+export CONFLUENT_RELEASE_TAG_OR_BRANCH=8.0.0-post
+export CONFLUENT_MAJOR=8
+export CONFLUENT_MINOR=0
 export CONFLUENT_PATCH=0
 #####################################################
 
