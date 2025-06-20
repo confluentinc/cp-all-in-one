@@ -93,7 +93,7 @@ services:
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
 
   prometheus:
-    image: confluentinc/cp-enterprise-prometheus:2.0.0
+    image: confluentinc/cp-enterprise-prometheus:${C3_VERSION:-2.0.0}
     hostname: cp-enterprise-prometheus
     container_name: prometheus
     volumes:
@@ -107,7 +107,7 @@ services:
 
 
   alertmanager:
-    image: confluentinc/cp-enterprise-alertmanager:2.0.0
+    image: confluentinc/cp-enterprise-alertmanager:${C3_VERSION:-2.0.0}
     hostname: cp-enterprise-alertmanager
     container_name: alertmanager
     depends_on:
@@ -122,7 +122,7 @@ services:
 
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center-next-gen:2.0.0
+    image: confluentinc/cp-enterprise-control-center-next-gen:${C3_VERSION:-2.0.0}
     hostname: control-center
     container_name: control-center
     depends_on:
