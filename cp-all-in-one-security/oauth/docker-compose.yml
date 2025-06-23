@@ -609,6 +609,7 @@ services:
       # If using Confluent Health+ for monitoring and alerting, uncomment the line below to run in management mode.
       # CONTROL_CENTER_MODE_ENABLE: "management"
       # You can now remove all Control Center "STREAMS", "MONITORING", and "METRICS" configurations
+      # Also c3prometheus and alertmanager and it's respective settings
 
       # general settings
       CONTROL_CENTER_BOOTSTRAP_SERVERS: EXTERNAL://broker:9095
