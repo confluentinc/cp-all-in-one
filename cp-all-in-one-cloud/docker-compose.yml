@@ -64,7 +64,7 @@ services:
     tty: true
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:8.1.x-latest
+    image: confluentinc/cp-enterprise-control-center-next-gen:2.2.0
     hostname: control-center
     container_name: control-center
     ports:
@@ -91,6 +91,8 @@ services:
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
       # Workaround for MMA-3564
       CONTROL_CENTER_METRICS_TOPIC_MAX_MESSAGE_BYTES: 8388608
+      # Management Mode since cloud's kafka cluster metrics will not be reported to C3
+      CONTROL_CENTER_MODE_ENABLE: "management"
       PORT: 9021
 
   connect:

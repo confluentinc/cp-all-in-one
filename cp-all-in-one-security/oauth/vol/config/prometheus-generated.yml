@@ -1,0 +1,31 @@
+# my global config
+global:
+  scrape_interval: 60s # Set the scrape interval to every 60 seconds.
+  evaluation_interval: 60s # Evaluate rules every 60 seconds.
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # recording rules file has rules for aggregating partition level metrics in advance so that queries at runtime are faster
+  - 'recording_rules-generated.yml'
+  # trigger rules file is used for defining triggers which are configured by the user using C3 UI
+  - 'trigger_rules-generated.yml'
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+
+# this rule helps flaten the resource attributes
+otlp:
+  promote_resource_attributes: ["host.hostname", "java.version", "kafka.broker.id", "kafka.cluster.id", "kafka.version", "type"]
+
+# A 10min time window is enough because it can easily absorb retries and network delays.
+storage:
+  tsdb:
+    out_of_order_time_window: 10m
