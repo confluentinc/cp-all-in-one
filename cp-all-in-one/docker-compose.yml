@@ -1,7 +1,7 @@
 services:
 
   broker:
-    image: confluentinc/cp-server:8.0.x-latest
+    image: confluentinc/cp-server:8.1.x-latest
     hostname: broker
     container_name: broker
     ports:
@@ -49,7 +49,7 @@ services:
       KAFKA_CONFLUENT_CONSUMER_LAG_EMITTER_ENABLED: "true"
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:8.0.x-latest
+    image: confluentinc/cp-schema-registry:8.1.x-latest
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -85,7 +85,7 @@ services:
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       # CLASSPATH required due to CC-2422
-      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-8.0.0-0.jar
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-8.1.0-0.jar
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
@@ -150,7 +150,7 @@ services:
       PORT: 9021
 
   ksqldb-server:
-    image: confluentinc/cp-ksqldb-server:8.0.x-latest
+    image: confluentinc/cp-ksqldb-server:8.1.x-latest
     hostname: ksqldb-server
     container_name: ksqldb-server
     depends_on:
@@ -173,7 +173,7 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
 
   ksqldb-cli:
-    image: confluentinc/cp-ksqldb-cli:8.0.x-latest
+    image: confluentinc/cp-ksqldb-cli:8.1.x-latest
     container_name: ksqldb-cli
     depends_on:
       - broker
@@ -183,7 +183,7 @@ services:
     tty: true
 
   ksql-datagen:
-    image: confluentinc/ksqldb-examples:8.0.x-latest
+    image: confluentinc/ksqldb-examples:8.1.x-latest
     hostname: ksql-datagen
     container_name: ksql-datagen
     depends_on:
@@ -205,7 +205,7 @@ services:
       STREAMS_SCHEMA_REGISTRY_PORT: 8081
 
   rest-proxy:
-    image: confluentinc/cp-kafka-rest:8.0.x-latest
+    image: confluentinc/cp-kafka-rest:8.1.x-latest
     depends_on:
       - broker
       - schema-registry
