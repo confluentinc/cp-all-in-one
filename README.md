@@ -39,7 +39,7 @@ Example to run all Apache Kafka services on `latest`:
 
       - name: Run Confluent Platform (Confluent Server)
         uses: confluentinc/cp-all-in-one@v0.1
-          type: cp-all-in-one-community
+        type: cp-all-in-one-community
 ```
 
 # Ports
