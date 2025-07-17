@@ -1,0 +1,33 @@
+groups:
+  - name: partition_level_heavy_queries
+    rules:
+      - record: code:io_confluent_kafka_server_log_size_by_broker:total
+        expr: sum by (kafka_broker_id, kafka_cluster_id) (io_confluent_kafka_server_log_size{topic!="__cluster_metadata"})
+      - record: code:io_confluent_kafka_server_log_size_by_topic:total
+        expr: sum by (topic, kafka_cluster_id) (io_confluent_kafka_server_log_size{topic!="__cluster_metadata"})
+      - record: code:io_confluent_kafka_server_partition_under_min_isr_by_broker:total
+        expr: sum by (kafka_broker_id, kafka_cluster_id) (io_confluent_kafka_server_partition_under_min_isr)
+      - record: code:io_confluent_kafka_server_log_tier_size_by_broker:total
+        expr: sum by (kafka_cluster_id, kafka_broker_id) (io_confluent_kafka_server_log_tier_size{topic!="__cluster_metadata"})
+      - record: code:io_confluent_kafka_server_partition_replicas_count_by_topic:total
+        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_replicas_count)"
+      - record: code:io_confluent_kafka_server_partition_in_sync_replicas_count_by_topic:total
+        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_in_sync_replicas_count)"
+      - record: code:io_confluent_kafka_server_broker_topic_total_fetch_requests_rate_1_min_by_topic:total
+        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_broker_topic_total_fetch_requests_rate_1_min)"
+      - record: code:io_confluent_kafka_server_broker_topic_total_fetch_requests_rate_1_min_by_broker:total
+        expr: "sum by (kafka_cluster_id, kafka_broker_id) (io_confluent_kafka_server_broker_topic_total_fetch_requests_rate_1_min)"
+      - record: code:io_confluent_kafka_server_partition_under_replicated_by_broker:total
+        expr: "sum by (kafka_cluster_id, kafka_broker_id) (io_confluent_kafka_server_partition_under_replicated)"
+      - record: code:io_confluent_kafka_server_partition_observer_replicas_count_by_topic:total
+        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_observer_replicas_count)"
+      - record: code:io_confluent_kafka_server_partition_under_replicated_by_topic:total
+        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_under_replicated)"
+      - record: code:io_confluent_kafka_server_log_tier_size_by_cluster:total
+        expr: "sum by (kafka_cluster_id) (max by (partition, topic, kafka_cluster_id) (io_confluent_kafka_server_log_tier_size))"
+      - record: code:io_confluent_kafka_server_partition_count_by_topic:total
+        expr: "count by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_replicas_count > 0)"
+      - record: code:io_confluent_kafka_server_partition_caught_up_replicas_count_by_topic:total
+        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_caught_up_replicas_count)"
+      - record: code:io_confluent_kafka_server_log_tier_size_by_topic:total
+        expr: "sum by (kafka_cluster_id, topic) (max by (topic, partition, kafka_cluster_id) (io_confluent_kafka_server_log_tier_size))"

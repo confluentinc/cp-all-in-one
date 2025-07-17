@@ -1,4 +1,3 @@
----
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.5
@@ -69,6 +68,7 @@ services:
       KAFKA_LOG4J_LOGGERS: "kafka.authorizer.logger=INFO,io.confluent.rest-utils=INFO,io.confluent.rbacapi=INFO,io.confluent.tokenapi=INFO,io.confluent.security.auth=INFO,io.confluent.security.store=INFO,io.confluent.common.security.jetty=INFO"
       KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
       KAFKA_SASL_ENABLED_MECHANISMS: PLAIN, OAUTHBEARER
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
 
       KAFKA_LISTENER_NAME_INTERNAL_SASL_ENABLED_MECHANISMS: PLAIN
       KAFKA_LISTENER_NAME_INTERNAL_PLAIN_SASL_JAAS_CONFIG: |
@@ -171,6 +171,22 @@ services:
       KAFKA_CONFLUENT_SECURITY_EVENT_LOGGER_AUTHENTICATION_ENABLE: 'true'
       EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1234:/usr/bin/jmx/exporter.yml"
 
+      # C3 Next Gen Metrics
+      KAFKA_METRIC_REPORTERS: io.confluent.telemetry.reporter.TelemetryReporter
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_TYPE: "http"
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_ENABLED: "true"
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_METRICS_INCLUDE: "io.confluent.kafka.server.request.(?!.*delta).*|io.confluent.kafka.server.server.broker.state|io.confluent.kafka.server.replica.manager.leader.count|io.confluent.kafka.server.request.queue.size|io.confluent.kafka.server.broker.topic.failed.produce.requests.rate.1.min|io.confluent.kafka.server.tier.archiver.total.lag|io.confluent.kafka.server.request.total.time.ms.p99|io.confluent.kafka.server.broker.topic.failed.fetch.requests.rate.1.min|io.confluent.kafka.server.broker.topic.total.fetch.requests.rate.1.min|io.confluent.kafka.server.partition.caught.up.replicas.count|io.confluent.kafka.server.partition.observer.replicas.count|io.confluent.kafka.server.tier.tasks.num.partitions.in.error|io.confluent.kafka.server.broker.topic.bytes.out.rate.1.min|io.confluent.kafka.server.request.total.time.ms.p95|io.confluent.kafka.server.controller.active.controller.count|io.confluent.kafka.server.request.total.time.ms.p999|io.confluent.kafka.server.controller.active.broker.count|io.confluent.kafka.server.request.handler.pool.request.handler.avg.idle.percent.rate.1.min|io.confluent.kafka.server.controller.unclean.leader.elections.rate.1.min|io.confluent.kafka.server.replica.manager.partition.count|io.confluent.kafka.server.controller.unclean.leader.elections.total|io.confluent.kafka.server.partition.replicas.count|io.confluent.kafka.server.broker.topic.total.produce.requests.rate.1.min|io.confluent.kafka.server.controller.offline.partitions.count|io.confluent.kafka.server.socket.server.network.processor.avg.idle.percent|io.confluent.kafka.server.partition.under.replicated|io.confluent.kafka.server.log.log.start.offset|io.confluent.kafka.server.log.tier.size|io.confluent.kafka.server.log.size|io.confluent.kafka.server.tier.fetcher.bytes.fetched.total|io.confluent.kafka.server.request.total.time.ms.p50|io.confluent.kafka.server.tenant.consumer.lag.offsets|io.confluent.kafka.server.log.log.end.offset|io.confluent.kafka.server.broker.topic.bytes.in.rate.1.min|io.confluent.kafka.server.partition.under.min.isr|io.confluent.kafka.server.partition.in.sync.replicas.count|io.confluent.telemetry.http.exporter.batches.dropped|io.confluent.telemetry.http.exporter.items.total|io.confluent.telemetry.http.exporter.items.succeeded|io.confluent.telemetry.http.exporter.send.time.total.millis|io.confluent.kafka.server.controller.leader.election.rate.(?!.*delta).*|io.confluent.telemetry.http.exporter.batches.failed"
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_CLIENT_BASE_URL: "http://c3prometheus:9090/api/v1/otlp"
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_CLIENT_COMPRESSION: "gzip"
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_API_KEY: "dummy"
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_API_SECRET: "dummy"
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_BUFFER_PENDING_BATCHES_MAX: "80"
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_BUFFER_BATCH_ITEMS_MAX: "4000"
+      KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_BUFFER_INFLIGHT_SUBMISSIONS_MAX: "10"
+      KAFKA_CONFLUENT_TELEMETRY_METRICS_COLLECTOR_INTERVAL_MS: "60000"
+      KAFKA_CONFLUENT_TELEMETRY_REMOTECONFIG_CONFLUENT_ENABLED: "false"
+      KAFKA_CONFLUENT_CONSUMER_LAG_EMITTER_ENABLED: "true"
+
     volumes:
       - ./keypair:/tmp/conf
       - ./mount:/etc/confluent/configs
@@ -233,10 +249,12 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:9095'
       SCHEMA_REGISTRY_GROUP_ID: schema-registry-demo
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
+      SCHEMA_REGISTRY_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
 
       SCHEMA_REGISTRY_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
       SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: SASL_PLAINTEXT
-      SCHEMA_REGISTRY_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      SCHEMA_REGISTRY_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       SCHEMA_REGISTRY_KAFKASTORE_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       SCHEMA_REGISTRY_KAFKASTORE_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -304,6 +322,7 @@ services:
       CONNECT_GROUP_ID: "connect-cluster"
       CONNECT_PRODUCER_CLIENT_ID: "connect-worker-producer"
       CONNECT_PRODUCER_ENABLE_IDEMPOTENCE: 'true'
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
 
       CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
       CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
@@ -336,7 +355,7 @@ services:
 
       # RBAC
       CONNECT_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONNECT_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -348,9 +367,9 @@ services:
 
       # Producer
       CONNECT_PRODUCER_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_PRODUCER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_PRODUCER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -359,9 +378,9 @@ services:
 
       # Consumer
       CONNECT_CONSUMER_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_CONSUMER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_CONSUMER_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
 
       CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_SASL_JAAS_CONFIG: |
@@ -372,7 +391,7 @@ services:
       # Default admin config
       CONNECT_ADMIN_SECURITY_PROTOCOL: SASL_PLAINTEXT
       CONNECT_ADMIN_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_ADMIN_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_ADMIN_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_ADMIN_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONNECT_ADMIN_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -420,7 +439,7 @@ services:
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEYSTORE_PASSWORD: confluent
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SSL_KEY_PASSWORD: confluent
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_MECHANISM: 'OAUTHBEARER'
-      CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONNECT_CONFIG_PROVIDERS_SECRET_PARAM_KAFKASTORE_SASL_JAAS_CONFIG: |
              org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
@@ -450,7 +469,8 @@ services:
       - "8088:8088"
       - "1238:1238"
     environment:
-      KSQL_OPTS: '-Dconfluent.support.metrics.enable=false'
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
+      KSQL_OPTS: '-Dconfluent.support.metrics.enable=false -Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
       CUB_CLASSPATH: '/usr/share/java/confluent-security/ksql/*:/usr/share/java/ksqldb-server/*:/usr/share/java/cp-base-new/*'
 
       KSQL_LOG4J_ROOT_LOGLEVEL: INFO
@@ -505,15 +525,41 @@ services:
       # Enable OAuth for ksqlDB's embedded Kafka clients that access and manage consumer groups and topics
       KSQL_SASL_MECHANISM: 'OAUTHBEARER'
       KSQL_SECURITY_PROTOCOL: SASL_PLAINTEXT
-      KSQL_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler'
+      KSQL_SASL_LOGIN_CALLBACK_HANDLER_CLASS: 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler'
       KSQL_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       KSQL_SASL_JAAS_CONFIG: |
         org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
         clientId="$KSQL_CLIENT_ID" \
         clientSecret="$KSQL_CLIENT_SECRET";   
 
+  c3prometheus:
+    image: confluentinc/cp-enterprise-prometheus:2.2.0
+    hostname: cp-enterprise-prometheus
+    container_name: c3prometheus
+    volumes:
+      - ./vol/config:/mnt/config
+    ports:
+      - "9090:9090"
+    environment:
+      CONFIG_PATH: "/mnt/config"
+      SHOULD_LOG_TO_FILE: false
+
+  c3_alertmanager:
+    image: confluentinc/cp-enterprise-alertmanager:2.2.0
+    hostname: cp-enterprise-alertmanager
+    container_name: alertmanager
+    depends_on:
+      - c3prometheus
+    volumes:
+      - ./vol/config:/mnt/config
+    ports:
+      - "9093:9093"
+    environment:
+      CONFIG_PATH: "/mnt/config"
+      SHOULD_LOG_TO_FILE: false
+
   control-center:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center:${CONFLUENT_DOCKER_TAG:-latest}
+    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center-next-gen:2.2.0
     hostname: control-center
     container_name: control-center
     healthcheck:
@@ -522,11 +568,16 @@ services:
       retries: 20
       test: curl --fail --silent http://control-center:9021 --output /dev/null || exit 1
     depends_on:
+      c3prometheus:
+        condition: service_started
+      c3_alertmanager:
+        condition: service_started
       broker:
         condition: service_healthy
       init_permissions:
         condition: service_completed_successfully
     volumes:
+      - ./vol/config:/mnt/config
       - ./keypair:/tmp/conf
       - ./mount:/etc/confluent/configs
       - ./bin/jmx_prometheus_javaagent-0.15.0.jar:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar
@@ -539,11 +590,14 @@ services:
     environment:
       CUB_CLASSPATH: '/usr/share/java/confluent-control-center/*:/usr/share/java/rest-utils/*:/usr/share/java/confluent-common/*:/usr/share/java/confluent-security/kafka-rest/*:/usr/share/java/kafka-rest/:/usr/share/java/cp-base-new/*'
       EXTRA_ARGS: "-javaagent:/usr/bin/jmx/jmx_prometheus_javaagent-0.15.0.jar=1237:/usr/bin/jmx/exporter.yml"
+      KAFKA_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=$IDP_TOKEN_ENDPOINT,$IDP_JWKS_ENDPOINT,$IDP_EXPECTED_ISSUER,$IDP_AUTH_ENDPOINT,$IDP_DEVICE_AUTH_ENDPOINT'
+      CONTROL_CENTER_OPTS: '-Dorg.apache.kafka.sasl.oauthbearer.allowed.urls=*'
 
       # If using Confluent Health+ for monitoring and alerting, uncomment the line below to run in management mode.
       # CONTROL_CENTER_MODE_ENABLE: "management"
       # You can now remove all Control Center "STREAMS", "MONITORING", and "METRICS" configurations
-      
+      # Also c3prometheus and alertmanager and it's respective settings
+
       # general settings
       CONTROL_CENTER_BOOTSTRAP_SERVERS: EXTERNAL://broker:9095
       CONTROL_CENTER_REPLICATION_FACTOR: 1
@@ -555,18 +609,18 @@ services:
       # Control Center uses Kafka Streams to process metrics
       CONTROL_CENTER_STREAMS_SECURITY_PROTOCOL: SASL_PLAINTEXT
       CONTROL_CENTER_STREAMS_SASL_MECHANISM: OAUTHBEARER
-      CONTROL_CENTER_STREAMS_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+      CONTROL_CENTER_STREAMS_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler
       CONTROL_CENTER_STREAMS_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
       CONTROL_CENTER_STREAMS_SASL_JAAS_CONFIG: |
               org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
               clientId="$C3_CLIENT_ID" \
               clientSecret="$C3_CLIENT_SECRET";
-  
+
 
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
       CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
       CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_OAUTHBEARER_TOKEN_ENDPOINT_URL: $IDP_TOKEN_ENDPOINT
-      CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_LOGIN_CALLBACK_HANDLER_CLASS: org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginCallbackHandler
       CONTROL_CENTER_MONITORING_INTERCEPTOR_SASL_JASS_CONFIG: |
         org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \
         clientId="$C3_CLIENT_ID" \
@@ -580,7 +634,7 @@ services:
       CONTROL_CENTER_STREAMS_CONSUMER_REQUEST_TIMEOUT_MS: "960032"
       CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 1
 
-      # HTTP and HTTPS to Control Center UI 
+      # HTTP and HTTPS to Control Center UI
       CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_LISTENERS: http://0.0.0.0:9021
       CONTROL_CENTER_CONFLUENT_CONTROLCENTER_REST_ADVERTISED_URL: http://control-center:9021
 
@@ -614,6 +668,13 @@ services:
       CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_SERVER_URLS_FAIL_ON_401: 'false'
       CONTROL_CENTER_STREAMS_CONFLUENT_METADATA_ENABLE_SERVER_URLS_REFRESH: 'false'
 
+      # C3 Next Gen
+      CONTROL_CENTER_PROMETHEUS_ENABLE: true
+      CONTROL_CENTER_PROMETHEUS_URL: http://c3prometheus:9090
+      CONTROL_CENTER_PROMETHEUS_RULES_FILE: /mnt/config/trigger_rules-generated.yml
+      CONTROL_CENTER_ALERTMANAGER_URL: http://alertmanager:9093
+      CONTROL_CENTER_ALERTMANAGER_CONFIG_FILE: /mnt/config/alertmanager-generated.yml
+
   prometheus:
     image: prom/prometheus
     hostname: prometheus
@@ -622,9 +683,10 @@ services:
       broker:
         condition: service_healthy
     ports:
-      - "9090:9090"
+      - "9990:9990"
     volumes:
       - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml
+    command: --web.listen-address=:9990 --config.file=/etc/prometheus/prometheus.yml
 
   grafana:
     image: grafana/grafana
