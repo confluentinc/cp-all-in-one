@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.confluent</groupId>
         <artifactId>rest-utils-parent</artifactId>
-        <version>8.0.0-0</version>
+        <version>8.0.1</version>
     </parent>
 
     <groupId>io.confluent</groupId>
@@ -18,7 +18,7 @@
         <schemaRegistryUrl></schemaRegistryUrl>
         <schemaRegistryBasicAuthUserInfo></schemaRegistryBasicAuthUserInfo>
         <newSchema>schemas/Count.avsc</newSchema>
-        <confluent.version>8.0.0-0</confluent.version>
+        <confluent.version>8.0.1</confluent.version>
     </properties>
 
     <repositories>
