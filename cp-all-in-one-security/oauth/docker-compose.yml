@@ -533,7 +533,7 @@ services:
         clientSecret="$KSQL_CLIENT_SECRET";   
 
   c3prometheus:
-    image: confluentinc/cp-enterprise-prometheus:8.2.x-latest
+    image: confluentinc/cp-enterprise-prometheus:2.2.1
     hostname: cp-enterprise-prometheus
     container_name: c3prometheus
     volumes:
@@ -545,7 +545,7 @@ services:
       SHOULD_LOG_TO_FILE: false
 
   c3_alertmanager:
-    image: confluentinc/cp-enterprise-alertmanager:8.2.x-latest
+    image: confluentinc/cp-enterprise-alertmanager:2.2.1
     hostname: cp-enterprise-alertmanager
     container_name: alertmanager
     depends_on:
@@ -559,7 +559,7 @@ services:
       SHOULD_LOG_TO_FILE: false
 
   control-center:
-    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center-next-gen:2.2.0
+    image: ${DOCKER_REGISTRY}confluentinc/cp-enterprise-control-center-next-gen:2.2.1
     hostname: control-center
     container_name: control-center
     healthcheck:
