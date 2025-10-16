@@ -53,7 +53,7 @@ services:
     tty: true
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center-next-gen:8.1.0
+    image: confluentinc/cp-enterprise-control-center-next-gen:2.2.1
     hostname: control-center
     container_name: control-center
     ports:
