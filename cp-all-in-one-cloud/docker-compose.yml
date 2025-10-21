@@ -46,12 +46,6 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
       KSQL_KSQL_CONNECT_URL: "http://connect:8083"
 
-  ksqldb-cli:
-    image: confluentinc/cp-ksqldb-cli:8.2.x-latest
-    container_name: ksqldb-cli
-    entrypoint: /bin/sh
-    tty: true
-
   control-center:
     image: confluentinc/cp-enterprise-control-center-next-gen:2.2.1
     hostname: control-center
