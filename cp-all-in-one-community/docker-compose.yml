@@ -1,7 +1,7 @@
 services:
 
   broker:
-    image: confluentinc/cp-kafka:8.1.x-latest
+    image: confluentinc/cp-kafka:8.1.1
     hostname: broker
     container_name: broker
     ports:
@@ -28,7 +28,7 @@ services:
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:8.1.x-latest
+    image: confluentinc/cp-schema-registry:8.1.1
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
@@ -66,7 +66,7 @@ services:
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
 
   ksqldb-server:
-    image: confluentinc/cp-ksqldb-server:8.1.x-latest
+    image: confluentinc/cp-ksqldb-server:8.1.1
     hostname: ksqldb-server
     container_name: ksqldb-server
     depends_on:
@@ -87,7 +87,7 @@ services:
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
 
   rest-proxy:
-    image: confluentinc/cp-kafka-rest:8.1.x-latest
+    image: confluentinc/cp-kafka-rest:8.1.1
     depends_on:
       - broker
       - schema-registry
