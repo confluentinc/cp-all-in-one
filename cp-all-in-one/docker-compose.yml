@@ -101,6 +101,7 @@ services:
     environment:
       CONFIG_PATH: "/mnt/config"
       SHOULD_LOG_TO_FILE: false
+      LOG_FILE: "/dev/null"
 
   alertmanager:
     image: confluentinc/cp-enterprise-alertmanager:2.2.0
@@ -115,6 +116,7 @@ services:
     environment:
       CONFIG_PATH: "/mnt/config"
       SHOULD_LOG_TO_FILE: false
+      LOG_FILE: "/dev/null"
 
   control-center:
     image: confluentinc/cp-enterprise-control-center-next-gen:2.2.0
