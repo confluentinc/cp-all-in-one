@@ -5,12 +5,12 @@ services:
     hostname: broker
     container_name: broker
     ports:
-      - "9092:9092"
-      - "9101:9101"
+      - "127.0.0.1:9092:9092"
+      - "127.0.0.1:9101:9101"
     environment:
       KAFKA_NODE_ID: 1
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,DEV_LOCAL:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://broker:29092,DEV_LOCAL://localhost:9092'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
@@ -18,21 +18,19 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_JMX_PORT: 9101
-      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_JMX_HOSTNAME: 127.0.0.1
       KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       KAFKA_METRIC_REPORTERS: io.confluent.telemetry.reporter.TelemetryReporter
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
-      KAFKA_LISTENERS: 'PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_LISTENERS: 'PLAINTEXT://broker:29092,CONTROLLER://broker:29093,DEV_LOCAL://127.0.0.1:9092'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
-      # Replace CLUSTER_ID with a unique base64 UUID using "bin/kafka-storage.sh random-uuid"
-      # See https://docs.confluent.io/kafka/operations-tools/kafka-tools.html#kafka-storage-sh
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_TYPE: "http"
       KAFKA_CONFLUENT_TELEMETRY_EXPORTER_C3PLUSPLUS_ENABLED: "true"
@@ -55,11 +53,11 @@ services:
     depends_on:
       - broker
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
-      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_LISTENERS: http://127.0.0.1:8081
 
   connect:
     image: cnfldemos/cp-server-connect-datagen:0.6.4-7.6.0
@@ -69,7 +67,7 @@ services:
       - broker
       - schema-registry
     ports:
-      - "8083:8083"
+      - "127.0.0.1:8083:8083"
     environment:
       CONNECT_BOOTSTRAP_SERVERS: 'broker:29092'
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
@@ -84,7 +82,6 @@ services:
       CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
-      # CLASSPATH required due to CC-2422
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-8.0.0.jar
       CONNECT_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
       CONNECT_CONSUMER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
@@ -97,7 +94,7 @@ services:
     volumes:
       - ./vol/config:/mnt/config
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     environment:
       CONFIG_PATH: "/mnt/config"
       SHOULD_LOG_TO_FILE: false
@@ -111,7 +108,7 @@ services:
     volumes:
       - ./vol/config:/mnt/config
     ports:
-      - "9093:9093"
+      - "127.0.0.1:9093:9093"
     environment:
       CONFIG_PATH: "/mnt/config"
       SHOULD_LOG_TO_FILE: false
@@ -128,7 +125,7 @@ services:
       - prometheus
       - alertmanager
     ports:
-      - "9021:9021"
+      - "127.0.0.1:9021:9021"
     volumes:
       - ./vol/config:/mnt/config
     environment:
@@ -157,12 +154,12 @@ services:
       - broker
       - connect
     ports:
-      - "8088:8088"
+      - "127.0.0.1:8088:8088"
     environment:
       KSQL_CONFIG_DIR: "/etc/ksql"
       KSQL_BOOTSTRAP_SERVERS: "broker:29092"
       KSQL_HOST_NAME: ksqldb-server
-      KSQL_LISTENERS: "http://0.0.0.0:8088"
+      KSQL_LISTENERS: "http://127.0.0.1:8088"
       KSQL_CACHE_MAX_BYTES_BUFFERING: 0
       KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
       KSQL_PRODUCER_INTERCEPTOR_CLASSES: "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor"
@@ -210,13 +207,13 @@ services:
       - broker
       - schema-registry
     ports:
-      - 8082:8082
+      - "127.0.0.1:8082:8082"
     hostname: rest-proxy
     container_name: rest-proxy
     environment:
       KAFKA_REST_HOST_NAME: rest-proxy
       KAFKA_REST_BOOTSTRAP_SERVERS: 'broker:29092'
-      KAFKA_REST_LISTENERS: "http://0.0.0.0:8082"
+      KAFKA_REST_LISTENERS: "http://127.0.0.1:8082"
       KAFKA_REST_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
 
   flink-sql-client:
@@ -233,24 +230,24 @@ services:
     hostname: flink-jobmanager
     container_name: flink-jobmanager
     ports:
-    - 9081:9081
+      - "127.0.0.1:9081:9081"
     command: jobmanager
     environment:
-    - |
-      FLINK_PROPERTIES=
-      jobmanager.rpc.address: flink-jobmanager
-      rest.bind-port: 9081
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        rest.bind-port: 9081
 
   flink-taskmanager:
     image: cnfldemos/flink-kafka:1.19.1-scala_2.12-java17
     hostname: flink-taskmanager
     container_name: flink-taskmanager
     depends_on:
-    - flink-jobmanager
+      - flink-jobmanager
     command: taskmanager
     scale: 1
     environment:
-    - |
-      FLINK_PROPERTIES=
-      jobmanager.rpc.address: flink-jobmanager
-      taskmanager.numberOfTaskSlots: 10
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 10
