@@ -91,7 +91,7 @@ services:
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
 
   prometheus:
-    image: confluentinc/cp-enterprise-prometheus:2.2.1
+    image: confluentinc/cp-enterprise-prometheus:2.3.0
     hostname: cp-enterprise-prometheus
     container_name: prometheus
     volumes:
@@ -103,7 +103,7 @@ services:
       SHOULD_LOG_TO_FILE: false
 
   alertmanager:
-    image: confluentinc/cp-enterprise-alertmanager:2.2.1
+    image: confluentinc/cp-enterprise-alertmanager:2.3.0
     hostname: cp-enterprise-alertmanager
     container_name: alertmanager
     depends_on:
@@ -117,7 +117,7 @@ services:
       SHOULD_LOG_TO_FILE: false
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center-next-gen:2.2.1
+    image: confluentinc/cp-enterprise-control-center-next-gen:2.3.0
     hostname: control-center
     container_name: control-center
     depends_on:
@@ -148,6 +148,13 @@ services:
       CONTROL_CENTER_ALERTMANAGER_URL: http://alertmanager:9093
       CONTROL_CENTER_ALERTMANAGER_CONFIG_FILE: /mnt/config/alertmanager-generated.yml
       PORT: 9021
+    command: >
+      bash -c "
+      ub render-template '/etc/confluent/docker/control-center.properties.template' > '/etc/confluent-control-center/control-center.properties' &&
+      ub render-template '/etc/confluent/docker/log4j2.yaml.template' > '/etc/confluent-control-center/log4j2.yaml' &&
+      ub render-template '/etc/confluent/docker/admin.properties.template' > '/etc/confluent-control-center/admin.properties' &&
+      exec /etc/confluent/docker/launch
+      "
 
   ksqldb-server:
     image: confluentinc/cp-ksqldb-server:8.1.0
