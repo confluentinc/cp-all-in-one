@@ -47,7 +47,7 @@ services:
       KSQL_KSQL_CONNECT_URL: "http://connect:8083"
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center-next-gen:2.2.1
+    image: confluentinc/cp-enterprise-control-center-next-gen:2.5.0
     hostname: control-center
     container_name: control-center
     ports:
