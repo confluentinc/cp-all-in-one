@@ -80,6 +80,15 @@ If you need access tokens for the vaious service users for testing, please have 
 ```shell
 source helper/set_user_tokens.sh
 ```
+
+Verify that the tokens were set correctly:
+
+```shell
+echo $SUPER_USER_ACCESS_TOKEN | head -c 50
+echo $CLIENT_APP_ACCESS_TOKEN | head -c 50
+```
+
+If the output is empty, the token acquisition failed. Check that Keycloak is running and the `/etc/hosts` entries are in place.
    
 ### Produce and Consume to Kafka using OAuth from Broker
 
@@ -207,7 +216,7 @@ export CLIENT_APP_ACCESS_TOKEN=$(curl -s \
     }'
 ```
 
-2. Login to Confluent Control Center to validate messages being produced to topic `test-topic-datagen`, use credentials `c3superuser` and `c3superuser` to login to C3 using SSO.
+2. Login to [Confluent Control Center](http://localhost:9021) to validate messages being produced to topic `test-topic-datagen`, use credentials `c3superuser` and `c3superuser` to login to C3 using SSO.
 3. Alternatively, you can start a consumer in the broker container to see the messages getting produced
 ```shell
 docker exec -it broker /bin/bash
@@ -280,7 +289,24 @@ curl --http1.1 \
 }' | jq
 ```
 
-The JSON output should include the `ABC` stream
+The JSON output should include the `ABC` stream:
+
+```json
+[
+  {
+    "@type": "currentStatus",
+    "statementText": "CREATE STREAM ABC (ORDER_ID BIGINT, PRODUCT_ID STRING, USER_ID STRING) WITH (CLEANUP_POLICY='delete', KAFKA_TOPIC='orders', KEY_FORMAT='KAFKA', PARTITIONS=2, VALUE_FORMAT='JSON');",
+    "commandId": "stream/`ABC`/create",
+    "commandStatus": {
+      "status": "SUCCESS",
+      "message": "Stream created",
+      "queryId": null
+    },
+    "commandSequenceNumber": 2,
+    "warnings": []
+  }
+]
+```
 
 2. Executing `LIST STREAMS;`
 
@@ -295,7 +321,35 @@ curl --http1.1 \
   "streamsProperties": {}
 }' | jq
 ```
-The JSON output should list all the streams, the `KSQL_PROCESSING_LOG` and `ABC` streams in this case.
+The JSON output should list all the streams, the `KSQL_PROCESSING_LOG` and `ABC` streams in this case:
+
+```json
+[
+  {
+    "@type": "streams",
+    "statementText": "LIST STREAMS;",
+    "streams": [
+      {
+        "type": "STREAM",
+        "name": "ABC",
+        "topic": "orders",
+        "keyFormat": "KAFKA",
+        "valueFormat": "JSON",
+        "isWindowed": false
+      },
+      {
+        "type": "STREAM",
+        "name": "KSQL_PROCESSING_LOG",
+        "topic": "ksql-clusterksql_processing_log",
+        "keyFormat": "KAFKA",
+        "valueFormat": "JSON",
+        "isWindowed": false
+      }
+    ],
+    "warnings": []
+  }
+]
+```
 
 3. Executing a Query
 
@@ -311,7 +365,21 @@ curl --http1.1 \
 }' | jq
 ```
 
-The JSON output should include the message `Query Completed`.
+The JSON output should include the message `Query Completed`:
+
+```json
+[
+  {
+    "header": {
+      "queryId": "transient_ABC_4113587785884148974",
+      "schema": "`ORDER_ID` BIGINT, `PRODUCT_ID` STRING, `USER_ID` STRING"
+    }
+  },
+  {
+    "finalMessage": "Query Completed"
+  }
+]
+```
 
 
 ### SSO login in C3
