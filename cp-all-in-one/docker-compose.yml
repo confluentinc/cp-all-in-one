@@ -55,11 +55,33 @@ services:
     depends_on:
       - broker
     ports:
-      - "8081:8081"
+      - "8083:8083"
+    volumes:
+      # cp-base-new entrypoint globs every dir under /usr/share/java/* onto the classpath,
+      # so dropping jars here (schema-importer, usm-governance + deps) is enough - no CLASSPATH
+      # env needed. Empty for now; jars not built yet.
+      - ./plugins:/usr/share/java/schema-registry-plugins-custom
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'broker:29092'
-      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8083
+      SCHEMA_REGISTRY_MODE_MUTABILITY: 'true'
+      # CC (RP-mode, localhost:8081) shares this broker and joins the default leader-election
+      # group "schema-registry" too - without its own group id, CC can win the election and CP's
+      # writes get leader-forwarded to CC unauthenticated (401).
+      SCHEMA_REGISTRY_SCHEMA_REGISTRY_GROUP_ID: 'schema-registry-cp'
+      SCHEMA_REGISTRY_RESOURCE_EXTENSION_CLASS: >-
+        io.confluent.schema.registry.usm.UsmSchemaRegistryExtension,
+        io.confluent.schema.importer.SchemaImporterResourceExtension
+      SCHEMA_REGISTRY_USM_SCHEMA_REGISTRY_REMOTE_ENDPOINT: 'http://host.docker.internal:8081'
+      SCHEMA_REGISTRY_USM_SCHEMA_REGISTRY_REMOTE_API_KEY: 'dummy-key'
+      SCHEMA_REGISTRY_USM_SCHEMA_REGISTRY_REMOTE_API_SECRET: 'nohash'
+      SCHEMA_REGISTRY_USM_SCHEMA_REGISTRY_REMOTE_ENDPOINT_VALIDATION_ENABLED: 'false'
+      SCHEMA_REGISTRY_USM_SCHEMA_REGISTRY_REMOTE_CONTEXT_PREFIX: '.sr-local-demo'
+      SCHEMA_REGISTRY_USM_SCHEMA_REGISTRY_FORWARD_ASYNC_ENABLED: 'true'
+      SCHEMA_REGISTRY_USM_SCHEMA_REGISTRY_FALLBACK_GET_ENABLED: 'true'
+      SCHEMA_REGISTRY_USM_SCHEMA_REGISTRY_LOCAL_POST_SUBJECT_ENABLED: 'true'
+      SCHEMA_REGISTRY_PASSWORD_ENCODER_SECRET: 'mysecret'
 
   connect:
     image: cnfldemos/cp-server-connect-datagen:0.6.4-7.6.0
