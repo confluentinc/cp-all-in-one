@@ -4,30 +4,44 @@ groups:
       - record: code:io_confluent_kafka_server_log_size_by_broker:total
         expr: sum by (kafka_broker_id, kafka_cluster_id) (io_confluent_kafka_server_log_size{topic!="__cluster_metadata"})
       - record: code:io_confluent_kafka_server_log_size_by_topic:total
-        expr: sum by (topic, kafka_cluster_id) (io_confluent_kafka_server_log_size{topic!="__cluster_metadata"})
+        expr: sum by (topic, tenant, tenant_topic, kafka_cluster_id) (io_confluent_kafka_server_log_size{topic!="__cluster_metadata"})
       - record: code:io_confluent_kafka_server_partition_under_min_isr_by_broker:total
         expr: sum by (kafka_broker_id, kafka_cluster_id) (io_confluent_kafka_server_partition_under_min_isr)
       - record: code:io_confluent_kafka_server_log_tier_size_by_broker:total
         expr: sum by (kafka_cluster_id, kafka_broker_id) (io_confluent_kafka_server_log_tier_size{topic!="__cluster_metadata"})
       - record: code:io_confluent_kafka_server_partition_replicas_count_by_topic:total
-        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_replicas_count)"
+        expr: "sum by (kafka_cluster_id, tenant, tenant_topic, topic) (io_confluent_kafka_server_partition_replicas_count)"
       - record: code:io_confluent_kafka_server_partition_in_sync_replicas_count_by_topic:total
-        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_in_sync_replicas_count)"
+        expr: "sum by (kafka_cluster_id, tenant, tenant_topic, topic) (io_confluent_kafka_server_partition_in_sync_replicas_count)"
       - record: code:io_confluent_kafka_server_broker_topic_total_fetch_requests_rate_1_min_by_topic:total
-        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_broker_topic_total_fetch_requests_rate_1_min)"
+        expr: "sum by (kafka_cluster_id, tenant, tenant_topic, topic) (io_confluent_kafka_server_broker_topic_total_fetch_requests_rate_1_min)"
       - record: code:io_confluent_kafka_server_broker_topic_total_fetch_requests_rate_1_min_by_broker:total
         expr: "sum by (kafka_cluster_id, kafka_broker_id) (io_confluent_kafka_server_broker_topic_total_fetch_requests_rate_1_min)"
       - record: code:io_confluent_kafka_server_partition_under_replicated_by_broker:total
         expr: "sum by (kafka_cluster_id, kafka_broker_id) (io_confluent_kafka_server_partition_under_replicated)"
       - record: code:io_confluent_kafka_server_partition_observer_replicas_count_by_topic:total
-        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_observer_replicas_count)"
+        expr: "sum by (kafka_cluster_id, tenant, tenant_topic, topic) (io_confluent_kafka_server_partition_observer_replicas_count)"
       - record: code:io_confluent_kafka_server_partition_under_replicated_by_topic:total
-        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_under_replicated)"
+        expr: "sum by (kafka_cluster_id, tenant, tenant_topic, topic) (io_confluent_kafka_server_partition_under_replicated)"
+      - record: code:io_confluent_kafka_server_partition_under_replicated_by_tenant:total
+        expr: "sum by (kafka_cluster_id, tenant) (io_confluent_kafka_server_partition_under_replicated)"
       - record: code:io_confluent_kafka_server_log_tier_size_by_cluster:total
         expr: "sum by (kafka_cluster_id) (max by (partition, topic, kafka_cluster_id) (io_confluent_kafka_server_log_tier_size))"
       - record: code:io_confluent_kafka_server_partition_count_by_topic:total
-        expr: "count by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_replicas_count > 0)"
+        expr: "count by (kafka_cluster_id, tenant, tenant_topic, topic) (io_confluent_kafka_server_partition_replicas_count > 0)"
       - record: code:io_confluent_kafka_server_partition_caught_up_replicas_count_by_topic:total
-        expr: "sum by (kafka_cluster_id, topic) (io_confluent_kafka_server_partition_caught_up_replicas_count)"
+        expr: "sum by (kafka_cluster_id, tenant, tenant_topic, topic) (io_confluent_kafka_server_partition_caught_up_replicas_count)"
       - record: code:io_confluent_kafka_server_log_tier_size_by_topic:total
-        expr: "sum by (kafka_cluster_id, topic) (max by (topic, partition, kafka_cluster_id) (io_confluent_kafka_server_log_tier_size))"
+        expr: "sum by (kafka_cluster_id, tenant, tenant_topic, topic) (max by (topic, tenant, tenant_topic, partition, kafka_cluster_id) (io_confluent_kafka_server_log_tier_size))"
+      - record: code:active_consumer_clients_1w:list
+        expr: group by(client_external_kafka_cluster_id, client_external_client_id, client_external_principal, client_software_version, client_software_name, tenant, user) (present_over_time(org_apache_kafka_consumer_connection_creation_total[604800000ms]))
+      - record: code:active_producer_clients_1w:list
+        expr: group by(client_external_kafka_cluster_id, client_external_client_id, client_external_principal, client_software_version, client_software_name, tenant, user) (present_over_time(org_apache_kafka_producer_connection_creation_total[604800000ms]))
+      - record: code:active_consumer_clients_1d:list
+        expr: group by(client_external_kafka_cluster_id, client_external_client_id, client_external_principal, client_software_version, client_software_name, tenant, user) (present_over_time(org_apache_kafka_consumer_connection_creation_total[86400000ms]))
+      - record: code:active_producer_clients_1d:list
+        expr: group by(client_external_kafka_cluster_id, client_external_client_id, client_external_principal, client_software_version, client_software_name, tenant, user) (present_over_time(org_apache_kafka_producer_connection_creation_total[86400000ms]))
+      - record: code:active_consumer_clients_1h:list
+        expr: group by(client_external_kafka_cluster_id, client_external_client_id, client_external_principal, client_software_version, client_software_name, tenant, user) (present_over_time(org_apache_kafka_consumer_connection_creation_total[3600000ms]))
+      - record: code:active_producer_clients_1h:list
+        expr: group by(client_external_kafka_cluster_id, client_external_client_id, client_external_principal, client_software_version, client_software_name, tenant, user) (present_over_time(org_apache_kafka_producer_connection_creation_total[3600000ms]))
